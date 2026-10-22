@@ -5,18 +5,25 @@
 [ext_resource type="Script" uid="uid://camjd5rff2xxi" path="res://scripts/camera_controller.gd" id="3_hfcue"]
 [ext_resource type="PackedScene" uid="uid://bx42g0723fddg" path="res://scenes/room_ui.tscn" id="4_tnfip"]
 
+[sub_resource type="BoxMesh" id="BoxMesh_ydu60"]
+
 [node name="Room" type="Node3D" unique_id=1153679153]
 script = ExtResource("1_liqgt")
 
 [node name="RoomGeometry" type="Node3D" parent="." unique_id=1422445613]
 script = ExtResource("1_llheb")
 
+[node name="FurnitureRoot" type="Node3D" parent="." unique_id=898378887]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="FurnitureRoot" unique_id=491341363]
+mesh = SubResource("BoxMesh_ydu60")
+
 [node name="Camera3D" type="Camera3D" parent="." unique_id=804807392]
 current = true
 script = ExtResource("3_hfcue")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2027338979]
-transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
+transform = Transform3D(0.8660254, 0.3535534, -0.3535534, 0, 0.7071068, 0.7071068, 0.5, -0.61237246, 0.61237246, 0, 0, 0)
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=179373543]
 
