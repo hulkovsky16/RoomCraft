@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dupxxtjht7i6b"]
+
+[ext_resource type="Script" uid="uid://s6jj287u7kd8" path="res://scripts/room_controller.gd" id="1_liqgt"]
+[ext_resource type="Script" uid="uid://daiea0vqroh4c" path="res://scripts/room_geometry.gd" id="1_llheb"]
+[ext_resource type="Script" uid="uid://camjd5rff2xxi" path="res://scripts/camera_controller.gd" id="3_hfcue"]
+[ext_resource type="PackedScene" uid="uid://bx42g0723fddg" path="res://scenes/room_ui.tscn" id="4_tnfip"]
+
+[node name="Room" type="Node3D" unique_id=1153679153]
+script = ExtResource("1_liqgt")
+
+[node name="RoomGeometry" type="Node3D" parent="." unique_id=1422445613]
+script = ExtResource("1_llheb")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=804807392]
+current = true
+script = ExtResource("3_hfcue")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2027338979]
+transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
+
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=179373543]
+
+[node name="RoomUI" parent="UILayer" unique_id=1639363027 instance=ExtResource("4_tnfip")]
