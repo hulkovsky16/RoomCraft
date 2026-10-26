@@ -11,6 +11,7 @@ var room_length: float = 4.0
 
 var floor_material: StandardMaterial3D
 var wall_material: StandardMaterial3D
+var window_openings: Array[Dictionary] = []
 
 
 func _process(_delta: float) -> void:
@@ -69,48 +70,63 @@ func rebuild(width: float, length: float) -> void:
 		floor_material
 	)
 
-	var half_width := room_width / 2.0
-	var half_length := room_length / 2.0
+	_build_wall("FrontWall", room_width, Vector3(0, 0, -room_length / 2), 0)
+	_build_wall("BackWall", room_width, Vector3(0, 0, room_length / 2), PI)
+	_build_wall("LeftWall", room_length, Vector3(-room_width / 2, 0, 0), PI / 2)
+	_build_wall("RightWall", room_length, Vector3(room_width / 2, 0, 0), -PI / 2)
 
-	_create_box(
-		"LeftWall",
-		Vector3(WALL_THICKNESS, WALL_HEIGHT, room_length),
-		Vector3(-half_width, WALL_HEIGHT / 2.0, 0),
-		wall_material
-	)
 
-	_create_box(
-		"RightWall",
-		Vector3(WALL_THICKNESS, WALL_HEIGHT, room_length),
-		Vector3(half_width, WALL_HEIGHT / 2.0, 0),
-		wall_material
-	)
+func set_window_openings(openings: Array[Dictionary]) -> void:
+	if window_openings == openings:
+		return
+	window_openings = openings.duplicate(true)
+	rebuild(room_width, room_length)
 
-	_create_box(
-		"FrontWall",
-		Vector3(room_width, WALL_HEIGHT, WALL_THICKNESS),
-		Vector3(0, WALL_HEIGHT / 2.0, -half_length),
-		wall_material
-	)
 
-	_create_box(
-		"BackWall",
-		Vector3(room_width, WALL_HEIGHT, WALL_THICKNESS),
-		Vector3(0, WALL_HEIGHT / 2.0, half_length),
-		wall_material
-	)
+func _build_wall(wall_name: String, span: float, at: Vector3, yaw: float) -> void:
+	var wall := Node3D.new()
+	wall.name = wall_name
+	wall.position = at
+	wall.rotation.y = yaw
+	add_child(wall)
+	var horizontal: Array[float] = [-span / 2, span / 2]
+	var vertical: Array[float] = [0.0, WALL_HEIGHT]
+	var holes: Array[Rect2] = []
+	for opening in window_openings:
+		if opening["wall"] != wall_name:
+			continue
+		var hole := Rect2(opening["center"] - opening["width"] / 2, opening["bottom"], opening["width"], opening["height"])
+		holes.append(hole)
+		for edge in [hole.position.x, hole.end.x]:
+			if edge > -span / 2 and edge < span / 2 and not horizontal.has(edge):
+				horizontal.append(edge)
+		for edge in [hole.position.y, hole.end.y]:
+			if edge > 0 and edge < WALL_HEIGHT and not vertical.has(edge):
+				vertical.append(edge)
+	horizontal.sort()
+	vertical.sort()
+	for x in range(horizontal.size() - 1):
+		for y in range(vertical.size() - 1):
+			var center := Vector2((horizontal[x] + horizontal[x + 1]) / 2, (vertical[y] + vertical[y + 1]) / 2)
+			var empty := false
+			for hole in holes:
+				if hole.has_point(center):
+					empty = true
+			if not empty:
+				_create_box("Segment_%d_%d" % [x,y], Vector3(horizontal[x + 1] - horizontal[x], vertical[y + 1] - vertical[y], WALL_THICKNESS), Vector3(center.x, center.y, 0), wall_material, wall)
 
 
 func _create_box(
 	object_name: String,
 	box_size: Vector3,
 	box_position: Vector3,
-	material: Material
+	material: Material,
+	parent: Node3D = self
 ) -> void:
 	var body := StaticBody3D.new()
 	body.name = object_name
 	body.position = box_position
-	add_child(body)
+	parent.add_child(body)
 
 	var mesh_instance := MeshInstance3D.new()
 	var box_mesh := BoxMesh.new()

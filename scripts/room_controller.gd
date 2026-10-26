@@ -47,3 +47,7 @@ func get_room_size() -> Vector2:
 
 func get_floor_bounds() -> Dictionary:
 	return room_geometry.get_floor_bounds()
+
+
+func set_window_openings(openings: Array[Dictionary]) -> void:
+	room_geometry.set_window_openings(openings)

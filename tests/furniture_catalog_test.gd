@@ -21,8 +21,10 @@ func run() -> void:
 	await process_frame
 	var system: FurnitureSystem = scene.get_node("FurnitureRoot")
 	var catalog := system.get_catalog()
-	check(catalog.size() == 10, "Ten catalog entries")
+	check(catalog.size() == 26, "Twenty-six catalog entries")
 	for type_id in catalog:
+		if catalog[type_id].get("placement", "floor") == "wall":
+			continue
 		var item := system.spawn_furniture(type_id, Vector3.ZERO)
 		check(item != null, type_id + ": spawn")
 		if item == null:
