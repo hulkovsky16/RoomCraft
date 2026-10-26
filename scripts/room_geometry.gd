@@ -13,6 +13,23 @@ var floor_material: StandardMaterial3D
 var wall_material: StandardMaterial3D
 
 
+func _process(_delta: float) -> void:
+	# Cutaway view: hide only walls between the camera and the interior.
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	var local_camera := to_local(camera.global_position)
+	for wall_name in ["LeftWall", "RightWall", "FrontWall", "BackWall"]:
+		var wall := get_node_or_null(NodePath(wall_name)) as Node3D
+		if wall == null:
+			continue
+		match wall_name:
+			"LeftWall": wall.visible = local_camera.x >= -room_width / 2
+			"RightWall": wall.visible = local_camera.x <= room_width / 2
+			"FrontWall": wall.visible = local_camera.z >= -room_length / 2
+			"BackWall": wall.visible = local_camera.z <= room_length / 2
+
+
 func _ready() -> void:
 	_create_materials()
 	rebuild(room_width, room_length)

@@ -8,6 +8,13 @@ signal room_size_changed(width: float, length: float)
 
 @onready var room_geometry: RoomGeometry = $RoomGeometry
 
+var room_size_validators: Array[Callable] = []
+
+
+func add_room_size_validator(validator: Callable) -> void:
+	if not room_size_validators.has(validator):
+		room_size_validators.append(validator)
+
 
 func _ready() -> void:
 	set_room_size(initial_width, initial_length)
@@ -26,6 +33,9 @@ func set_room_size(width: float, length: float) -> bool:
 		push_warning("Довжина повинна бути від 3 до 10 метрів.")
 		return false
 
+	for validator in room_size_validators:
+		if validator.is_valid() and not validator.call(width, length):
+			return false
 	room_geometry.rebuild(width, length)
 	room_size_changed.emit(width, length)
 	return true

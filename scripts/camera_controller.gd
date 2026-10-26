@@ -20,6 +20,16 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# Always release a drag, even when the pointer moves over a UI panel.
+	if event is InputEventMouseButton and not event.pressed:
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			rotating = false
+		if event.button_index == MOUSE_BUTTON_MIDDLE:
+			panning = false
+	if get_viewport().gui_get_hovered_control() != null:
+		return
+	if get_viewport().gui_get_focus_owner() is LineEdit:
+		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			rotating = event.pressed
