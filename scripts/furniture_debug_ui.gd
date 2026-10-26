@@ -66,7 +66,7 @@ func _ready() -> void:
 	content.add_child(status)
 	system.status_changed.connect(func(message): status.text = message)
 	var help := Label.new()
-	help.text = "Kamera: PPM — obrót, ŚPM — ruch\nKółko — zoom; R — reset\nMeble: LPM — wybór / zatwierdzenie"
+	help.text = "Kamera: strzałki — lot; Shift — szybciej\nPgUp / PgDn — góra / dół\nPPM — obrót, ŚPM — ruch\nKółko — zoom; R — reset\nMeble: LPM — wybór / zatwierdzenie"
 	content.add_child(help)
 
 
