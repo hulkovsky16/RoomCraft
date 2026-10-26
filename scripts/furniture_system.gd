@@ -5,7 +5,18 @@ signal selection_changed(item: FurnitureItem)
 signal furniture_changed
 signal status_changed(message: String)
 
-const CATALOG := {"table": {"name": "Stół", "size": Vector3(1.4, 0.75, 0.8)}}
+const CATALOG := {
+	"table": {"name": "Stół", "size": Vector3(1.4, 0.75, 0.8)},
+	"chair": {"name": "Krzesło", "size": Vector3(0.5, 0.9, 0.55)},
+	"sofa": {"name": "Sofa", "size": Vector3(2.0, 0.85, 0.9)},
+	"armchair": {"name": "Fotel", "size": Vector3(0.9, 0.85, 0.85)},
+	"bed": {"name": "Łóżko", "size": Vector3(1.6, 0.95, 2.1)},
+	"wardrobe": {"name": "Szafa", "size": Vector3(1.2, 2.0, 0.6)},
+	"bookshelf": {"name": "Regał", "size": Vector3(0.8, 1.8, 0.35)},
+	"desk": {"name": "Biurko", "size": Vector3(1.2, 0.75, 0.6)},
+	"nightstand": {"name": "Szafka nocna", "size": Vector3(0.45, 0.5, 0.4)},
+	"coffee_table": {"name": "Stolik kawowy", "size": Vector3(1.0, 0.4, 0.6)},
+}
 const WALL_INSET := 0.05
 
 var selected: FurnitureItem

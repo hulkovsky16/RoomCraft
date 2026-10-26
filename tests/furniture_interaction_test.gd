@@ -41,6 +41,16 @@ func run():
 	for i in range(5): await process_frame
 	check(not system.candidate_valid, "UI panel blocks placement")
 	system.cancel_placement()
+	var catalog: ItemList = scene.get_node("FurnitureDebugUI").find_child("FurnitureCatalog", true, false)
+	for index in [1, 1, 9]:
+		catalog.select(index)
+		catalog.ensure_current_is_visible()
+		for i in range(3): await process_frame
+		root.warp_mouse(catalog.global_position + catalog.get_item_rect(index).get_center() - Vector2(0, catalog.get_v_scroll_bar().value))
+		for i in range(3): await process_frame
+		click()
+		check(system.preview != null and system.preview.type_id == system.get_catalog().keys()[index], "Catalog click starts correct preview: " + str(index))
+		system.cancel_placement()
 	system.spawn_furniture("table", Vector3(-0.8,0,0))
 	for i in range(5): await process_frame
 	await RenderingServer.frame_post_draw

@@ -29,6 +29,13 @@ func _ready() -> void:
 		current = current.get_parent()
 
 	apply_button.pressed.connect(_on_apply_pressed)
+	if room_controller != null:
+		room_controller.room_size_changed.connect(_sync_room_size)
+
+
+func _sync_room_size(width: float, length: float) -> void:
+	width_input.value = width
+	length_input.value = length
 
 
 func _on_apply_pressed() -> void:
