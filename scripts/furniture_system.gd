@@ -89,7 +89,7 @@ func _footprint(item: FurnitureItem) -> Vector2:
 	return CATALOG[item.type_id].get("footprint", Vector2(item.size.x, item.size.z))
 
 
-func _supported_pose(item: FurnitureItem, pose: Dictionary, poses: Dictionary) -> bool:
+func _supported_pose(item: FurnitureItem, pose: Dictionary, poses: Dictionary, imported: Dictionary = {}) -> bool:
 	var at: Vector3 = pose["position"]
 	var support_id: String = pose["support_id"]
 	if item.placement == "wall":
@@ -98,7 +98,7 @@ func _supported_pose(item: FurnitureItem, pose: Dictionary, poses: Dictionary) -
 		return absf(at.y) < 0.0001
 	if not CATALOG[item.type_id].get("stackable", false):
 		return false
-	var support := _find_item(support_id)
+	var support: FurnitureItem = imported.get(support_id) if not imported.is_empty() else _find_item(support_id)
 	if support == null or support == item or not CATALOG[support.type_id].get("surface", false):
 		return false
 	if not support.support_id.is_empty():
@@ -726,3 +726,89 @@ func _objects_overlap(a: FurnitureItem, at: Vector3, yaw: float, b: FurnitureIte
 	if a.precise_collision and b.precise_collision:
 		return DecorCollision.overlaps(a, at, yaw, b, bt, byaw)
 	return true
+
+
+# Persistence boundary: replaces furniture in the current room, never parses files.
+# All validation happens in a hidden staging container before the live scene changes.
+func restore_furniture(records: Variant) -> Dictionary:
+	if not records is Array:
+		return {"ok": false, "error": "Furniture must be an array"}
+	var stage := Node3D.new()
+	stage.visible = false
+	add_child(stage)
+	var imported: Dictionary = {}
+	var error := ""
+	for record in records:
+		if not record is Dictionary:
+			error = "Each furniture record must be an object"
+			break
+		var valid := true
+		for field in ["id", "type_id"]:
+			if not record.get(field) is String or record[field].is_empty():
+				valid = false
+		for field in ["placement", "wall_id", "support_id"]:
+			if record.has(field) and not record[field] is String:
+				valid = false
+		var coordinates: Variant = record.get("position")
+		if not coordinates is Array or coordinates.size() != 3:
+			valid = false
+		else:
+			for value in coordinates:
+				if not _record_number(value):
+					valid = false
+		if not _record_number(record.get("rotation_y")):
+			valid = false
+		if not valid:
+			error = "Invalid furniture fields"
+			break
+		if not CATALOG.has(record["type_id"]) or imported.has(record["id"]):
+			error = "Unknown furniture type or duplicate ID"
+			break
+		var item := _new_item(record["type_id"])
+		item.furniture_id = record["id"]
+		item.support_id = record.get("support_id", "")
+		item.wall_id = record.get("wall_id", "")
+		item.position = Vector3(coordinates[0], coordinates[1], coordinates[2])
+		item.rotation.y = record["rotation_y"]
+		stage.add_child(item)
+		item.collision_layer = 0
+		imported[item.furniture_id] = item
+		if record.get("placement", item.placement) != item.placement or (item.placement == "floor" and not item.wall_id.is_empty()):
+			error = "Placement does not match furniture type"
+			break
+	if error.is_empty():
+		var items := imported.values()
+		for i in range(items.size()):
+			var item: FurnitureItem = items[i]
+			var pose := {"position": item.position, "yaw": item.rotation.y, "support_id": item.support_id}
+			if not item.position.is_finite() or not is_finite(item.rotation.y) or not _fits_room(item, item.position, item.rotation.y, room.get_floor_bounds()) or not _supported_pose(item, pose, {}, imported):
+				error = "Invalid position or support: " + item.furniture_id
+				break
+			for j in range(i):
+				var other: FurnitureItem = items[j]
+				if _objects_overlap(item, item.position, item.rotation.y, other, other.position, other.rotation.y):
+					error = "Furniture overlaps: " + item.furniture_id
+					break
+			if not error.is_empty():
+				break
+	if not error.is_empty():
+		stage.free()
+		return {"ok": false, "error": error}
+	cancel_placement()
+	_select(null)
+	for child in get_children():
+		if child is FurnitureItem:
+			remove_child(child)
+			child.queue_free()
+	for item in imported.values():
+		# Keep room-local coordinates; staging container has an identity transform.
+		item.reparent(self, false)
+		item.collision_layer = 2
+	stage.free()
+	furniture_changed.emit()
+	status_changed.emit("Wczytano wyposażenie pokoju")
+	return {"ok": true, "error": ""}
+
+
+func _record_number(value: Variant) -> bool:
+	return (value is int or value is float) and is_finite(float(value))
