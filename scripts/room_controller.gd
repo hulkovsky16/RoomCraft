@@ -3,8 +3,8 @@ extends Node3D
 
 signal room_size_changed(width: float, length: float)
 
-@export_range(3.0, 10.0, 0.5) var initial_width: float = 5.0
-@export_range(3.0, 10.0, 0.5) var initial_length: float = 4.0
+@export_range(2.0, 30.0, 0.5) var initial_width: float = 5.0
+@export_range(2.0, 30.0, 0.5) var initial_length: float = 4.0
 
 @onready var room_geometry: RoomGeometry = $RoomGeometry
 
@@ -25,12 +25,12 @@ func set_room_size(width: float, length: float) -> bool:
 		push_warning("Введено некоректні розміри.")
 		return false
 
-	if width < 3.0 or width > 10.0:
-		push_warning("Ширина повинна бути від 3 до 10 метрів.")
+	if width < RoomGeometry.MIN_ROOM_SIZE or width > RoomGeometry.MAX_ROOM_SIZE:
+		push_warning("Ширина повинна бути від 2 до 30 метрів.")
 		return false
 
-	if length < 3.0 or length > 10.0:
-		push_warning("Довжина повинна бути від 3 до 10 метрів.")
+	if length < RoomGeometry.MIN_ROOM_SIZE or length > RoomGeometry.MAX_ROOM_SIZE:
+		push_warning("Довжина повинна бути від 2 до 30 метрів.")
 		return false
 
 	for validator in room_size_validators:

@@ -16,11 +16,19 @@ var rotating := false
 var panning := false
 var free_flight := false
 var flight_keys: Dictionary = {}
-const FLIGHT_KEYS := [KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_PAGEUP, KEY_PAGEDOWN, KEY_SHIFT]
+const FLIGHT_KEYS := [KEY_W, KEY_S, KEY_A, KEY_D, KEY_PAGEUP, KEY_PAGEDOWN, KEY_SHIFT]
 
 
 func _ready() -> void:
 	_update_camera()
+	get_parent().room_size_changed.connect(_on_room_resized)
+
+
+func _on_room_resized(width: float, length: float) -> void:
+	max_distance = maxf(20.0, Vector2(width, length).length() + 8.0)
+	if not free_flight:
+		distance = maxf(8.0, maxf(width, length) * 1.2)
+		_update_camera()
 
 
 func _editing_text() -> bool:
@@ -39,10 +47,10 @@ func _process(delta: float) -> void:
 	if _editing_text():
 		flight_keys.clear()
 		return
-	var sideways := float(flight_keys.has(KEY_RIGHT)) - float(flight_keys.has(KEY_LEFT))
-	var forward := float(flight_keys.has(KEY_UP)) - float(flight_keys.has(KEY_DOWN))
+	var sideways := float(flight_keys.has(KEY_D)) - float(flight_keys.has(KEY_A))
+	var forward := float(flight_keys.has(KEY_W)) - float(flight_keys.has(KEY_S))
 	var vertical := float(flight_keys.has(KEY_PAGEUP)) - float(flight_keys.has(KEY_PAGEDOWN))
-	# Horizontal arrow flight never dives toward the floor or changes the pitch.
+	# Horizontal WASD flight never dives toward the floor or changes the pitch.
 	var direction := Vector3(cos(yaw), 0, -sin(yaw)) * sideways + Vector3(-sin(yaw), 0, -cos(yaw)) * forward + Vector3.UP * vertical
 	if direction.is_zero_approx():
 		return
@@ -67,7 +75,8 @@ func reset_view() -> void:
 	rotating = false
 	panning = false
 	target = Vector3(0, 1, 0)
-	distance = 8.0
+	var room_size: Vector2 = get_parent().get_room_size()
+	distance = maxf(8.0, maxf(room_size.x, room_size.y) * 1.2)
 	yaw = 0.7
 	pitch = 0.55
 	_update_camera()
@@ -75,7 +84,7 @@ func reset_view() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
-		var key: int = event.keycode if event.keycode != 0 else event.physical_keycode
+		var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
 		if key in FLIGHT_KEYS:
 			if not event.pressed:
 				flight_keys.erase(key)

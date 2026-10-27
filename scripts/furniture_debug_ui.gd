@@ -3,10 +3,13 @@ extends CanvasLayer
 var thumbnails: Dictionary = {}
 var catalog_data: Dictionary = {}
 var catalog_list: ItemList
+var furniture: FurnitureSystem
+var angle_label: Label
 
 
 func _ready() -> void:
 	var system: FurnitureSystem = get_parent().get_node("FurnitureRoot")
+	furniture = system
 	var panel := PanelContainer.new()
 	add_child(panel)
 	panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
@@ -28,7 +31,7 @@ func _ready() -> void:
 	content.add_child(categories)
 	var list := ItemList.new()
 	list.name = "FurnitureCatalog"
-	list.custom_minimum_size = Vector2(300, 300)
+	list.custom_minimum_size = Vector2(300, 260)
 	catalog_list = list
 	list.max_text_lines = 2
 	list.max_columns = 2
@@ -47,7 +50,7 @@ func _ready() -> void:
 	list.item_clicked.connect(func(index, _at, button):
 		if button == MOUSE_BUTTON_LEFT:
 			system.begin_placement(list.get_item_metadata(index)))
-	for entry in [["Przenieś (G)", system.begin_move_selected], ["Obróć w lewo (Q)", system.rotate_active.bind(deg_to_rad(-15))], ["Obróć w prawo (E)", system.rotate_active.bind(deg_to_rad(15))], ["Usuń (Delete)", system.delete_selected], ["Anuluj (Esc)", system.cancel_placement]]:
+	for entry in [["Przenieś (G)", system.begin_move_selected], ["Obróć w lewo (Q)", system.rotate_active.bind(deg_to_rad(-15))], ["Obróć w prawo (E)", system.rotate_active.bind(deg_to_rad(15))], ["Wyrównaj do ścian (F)", system.align_active], ["Usuń (Delete)", system.delete_selected], ["Anuluj (Esc)", system.cancel_placement]]:
 		var button := Button.new()
 		button.text = entry[0]
 		button.focus_mode = Control.FOCUS_NONE
@@ -67,6 +70,8 @@ func _ready() -> void:
 	selection.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	content.add_child(selection)
 	system.selection_changed.connect(func(item): selection.text = "Wybrano: " + (catalog[item.type_id]["name"] if item != null else "—"))
+	angle_label = Label.new()
+	content.add_child(angle_label)
 	var status := Label.new()
 	status.text = "Wybierz mebel z katalogu, potem kliknij podłogę"
 	status.custom_minimum_size.x = 300
@@ -74,7 +79,7 @@ func _ready() -> void:
 	content.add_child(status)
 	system.status_changed.connect(func(message): status.text = message)
 	var help := Label.new()
-	help.text = "Strzałki — lot; Shift — szybciej\nPgUp / PgDn — góra / dół\nPPM — obrót; R — widok pokoju\nKółko — zoom; ŚPM — ruch\nPrzytrzymaj Q/E — obrót mebla"
+	help.text = "WASD — lot; Shift — szybciej\nPgUp / PgDn — góra / dół\nPPM — obrót; R — widok pokoju\nKółko — zoom; ŚPM — ruch\nQ/E — obrót; F — wyrównanie"
 	content.add_child(help)
 
 
@@ -89,3 +94,10 @@ func _populate(category: String) -> void:
 		var dimensions: Vector3 = data["size"]
 		var placement := "Ściana" if data.get("placement", "floor") == "wall" else "Podłoga"
 		catalog_list.set_item_tooltip(index, "%s\n%.2f × %.2f × %.2f m\n%s" % [data["name"], dimensions.x, dimensions.y, dimensions.z, placement])
+
+
+func _process(_delta: float) -> void:
+	if angle_label == null:
+		return
+	var item := furniture.preview if furniture.preview != null else furniture.selected
+	angle_label.text = "Kąt: %.1f°" % fposmod(rad_to_deg(item.rotation.y), 360.0) if item != null else "Kąt: —"

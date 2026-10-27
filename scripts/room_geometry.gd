@@ -2,6 +2,9 @@
 extends Node3D
 class_name RoomGeometry
 
+const MIN_ROOM_SIZE := 2.0
+const MAX_ROOM_SIZE := 30.0
+
 const WALL_HEIGHT: float = 2.7
 const WALL_THICKNESS: float = 0.1
 const FLOOR_THICKNESS: float = 0.1
@@ -48,12 +51,12 @@ func _create_materials() -> void:
 
 
 func rebuild(width: float, length: float) -> void:
-	if width < 3.0 or width > 10.0:
-		push_error("Width must be between 3 and 10 meters.")
+	if width < MIN_ROOM_SIZE or width > MAX_ROOM_SIZE:
+		push_error("Width must be between 2 and 30 meters.")
 		return
 
-	if length < 3.0 or length > 10.0:
-		push_error("Length must be between 3 and 10 meters.")
+	if length < MIN_ROOM_SIZE or length > MAX_ROOM_SIZE:
+		push_error("Length must be between 2 and 30 meters.")
 		return
 
 	room_width = width

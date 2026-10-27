@@ -414,7 +414,42 @@ func start_rotation(source: String, direction: float) -> void:
 		return
 	rotation_holds[source] = direction
 	rotation_hold_time = 0.0
-	rotate_active(deg_to_rad(15.0 * direction))
+	# A tap goes to an absolute grid angle, repairing offsets left by a hold.
+	var step := deg_to_rad(15.0)
+	var angle := item.rotation.y
+	var snapped := (floorf((angle + 0.00001) / step) + 1) * step if direction > 0 else (ceilf((angle - 0.00001) / step) - 1) * step
+	_set_active_angle(snapped)
+
+
+func _set_active_angle(angle: float) -> bool:
+	var item := preview if preview != null else selected
+	if item == null or item.placement == "wall":
+		return false
+	var difference := wrapf(angle - item.rotation.y, -PI, PI)
+	if item == preview:
+		item.rotation.y = wrapf(angle, -PI, PI)
+		return true
+	# Check the whole sweep; alignment must not jump across an obstacle.
+	var steps := maxi(1, ceili(absf(difference) / deg_to_rad(1)))
+	for i in range(1, steps + 1):
+		if not is_placement_valid(item, item.position, item.rotation.y + difference * float(i) / steps, item):
+			status_changed.emit("Wyrównanie zablokowane: ściana lub inny mebel")
+			return false
+	item.rotation.y = wrapf(angle, -PI, PI)
+	furniture_changed.emit()
+	return true
+
+
+func align_active() -> bool:
+	stop_all_rotation()
+	var item := preview if preview != null else selected
+	if item == null:
+		status_changed.emit("Najpierw wybierz mebel")
+		return false
+	if item.placement == "wall":
+		status_changed.emit("Okno jest już wyrównane do ściany")
+		return true
+	return _set_active_angle(snappedf(item.rotation.y, PI / 2))
 
 
 func stop_rotation(source: String) -> void:
@@ -469,6 +504,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_T: begin_placement("table")
 			KEY_G: begin_move_selected()
 			KEY_DELETE: delete_selected()
+			KEY_F: align_active()
 			KEY_Q, KEY_E:
 				start_rotation("key_q" if event.keycode == KEY_Q else "key_e", -1.0 if event.keycode == KEY_Q else 1.0)
 			_: return

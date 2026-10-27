@@ -18,6 +18,22 @@ func _ready() -> void:
 			break
 		current = current.get_parent()
 
+	var camera: Camera3D = room_controller.get_node("Camera3D")
+	var sensitivity_label := Label.new()
+	sensitivity_label.text = "Czułość kamery: 1.00×"
+	$SettingsPanel/Content.add_child(sensitivity_label)
+	var sensitivity := HSlider.new()
+	sensitivity.name = "CameraSensitivity"
+	sensitivity.min_value = 0.25
+	sensitivity.max_value = 3.0
+	sensitivity.step = 0.05
+	sensitivity.value = 1.0
+	sensitivity.focus_mode = Control.FOCUS_NONE
+	sensitivity.tooltip_text = "Szybkość obrotu kamery myszą"
+	$SettingsPanel/Content.add_child(sensitivity)
+	sensitivity.value_changed.connect(func(value):
+		camera.rotation_sensitivity = 0.008 * value
+		sensitivity_label.text = "Czułość kamery: %.2f×" % value)
 	apply_button.pressed.connect(_on_apply_pressed)
 	width_input.text_submitted.connect(func(_text): _on_apply_pressed())
 	length_input.text_submitted.connect(func(_text): _on_apply_pressed())
@@ -37,8 +53,8 @@ func _on_apply_pressed() -> void:
 		return
 	var width: float = width_input.read_value()
 	var length: float = length_input.read_value()
-	if not is_finite(width) or not is_finite(length) or width < 3 or width > 10 or length < 3 or length > 10:
-		status_label.text = "Podaj liczby od 3 do 10 m (np. 5,5)"
+	if not is_finite(width) or not is_finite(length) or width < RoomGeometry.MIN_ROOM_SIZE or width > RoomGeometry.MAX_ROOM_SIZE or length < RoomGeometry.MIN_ROOM_SIZE or length > RoomGeometry.MAX_ROOM_SIZE:
+		status_label.text = "Podaj liczby od 2 do 30 m (np. 5,5)"
 		return
 	var success: bool = room_controller.set_room_size(width, length)
 
