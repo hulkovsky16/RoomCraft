@@ -21,7 +21,7 @@ func run() -> void:
 	await process_frame
 	var system: FurnitureSystem = scene.get_node("FurnitureRoot")
 	var catalog := system.get_catalog()
-	check(catalog.size() == 26, "Twenty-six catalog entries")
+	check(catalog.size() == 28, "Twenty-eight catalog entries")
 	for type_id in catalog:
 		if catalog[type_id].get("placement", "floor") == "wall":
 			continue

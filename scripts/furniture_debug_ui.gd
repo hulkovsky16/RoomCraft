@@ -93,6 +93,10 @@ func _populate(category: String) -> void:
 		catalog_list.set_item_metadata(index, type_id)
 		var dimensions: Vector3 = data["size"]
 		var placement := "Ściana" if data.get("placement", "floor") == "wall" else "Podłoga"
+		if data.get("stackable", false):
+			placement = "Podłoga lub dozwolony blat"
+		if data.get("surface", false):
+			placement += " / blat na dekoracje"
 		catalog_list.set_item_tooltip(index, "%s\n%.2f × %.2f × %.2f m\n%s" % [data["name"], dimensions.x, dimensions.y, dimensions.z, placement])
 
 
@@ -100,4 +104,4 @@ func _process(_delta: float) -> void:
 	if angle_label == null:
 		return
 	var item := furniture.preview if furniture.preview != null else furniture.selected
-	angle_label.text = "Kąt: %.1f°" % fposmod(rad_to_deg(item.rotation.y), 360.0) if item != null else "Kąt: —"
+	angle_label.text = "Kąt: %.1f° | Wys.: %.2f m" % [fposmod(rad_to_deg(item.rotation.y), 360.0), item.position.y] if item != null else "Kąt: —"

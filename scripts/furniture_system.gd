@@ -6,38 +6,41 @@ signal furniture_changed
 signal status_changed(message: String)
 
 const CATALOG := {
-	"table": {"name": "Stół", "size": Vector3(1.4, 0.75, 0.8)},
+	"table": {"name": "Stół", "size": Vector3(1.4, 0.75, 0.8), "surface": true},
 	"chair": {"name": "Krzesło", "size": Vector3(0.5, 0.9, 0.55)},
 	"sofa": {"name": "Sofa", "size": Vector3(2.0, 0.85, 0.9)},
 	"armchair": {"name": "Fotel", "size": Vector3(0.9, 0.85, 0.85)},
 	"bed": {"name": "Łóżko", "size": Vector3(1.6, 0.95, 2.1)},
 	"wardrobe": {"name": "Szafa", "size": Vector3(1.2, 2.0, 0.6)},
 	"bookshelf": {"name": "Regał", "size": Vector3(0.8, 1.8, 0.35)},
-	"desk": {"name": "Biurko", "size": Vector3(1.2, 0.75, 0.6)},
-	"nightstand": {"name": "Szafka nocna", "size": Vector3(0.45, 0.5, 0.4)},
-	"coffee_table": {"name": "Stolik kawowy", "size": Vector3(1.0, 0.4, 0.6)},
+	"desk": {"name": "Biurko", "size": Vector3(1.2, 0.75, 0.6), "surface": true},
+	"nightstand": {"name": "Szafka nocna", "size": Vector3(0.45, 0.5, 0.4), "surface": true},
+	"coffee_table": {"name": "Stolik kawowy", "size": Vector3(1.0, 0.4, 0.6), "surface": true},
 	"window": {"name": "Okno", "size": Vector3(1.2, 1.1, 0.16), "category": "Okna", "placement": "wall"},
 	"tv_console": {"name": "Telewizor + RTV", "size": Vector3(1.4, 1.25, 0.4), "category": "Dekoracje"},
 	"plant": {"name": "Roślina", "size": Vector3(0.65, 1.3, 0.65), "category": "Dekoracje"},
-	"flowers": {"name": "Kwiaty", "size": Vector3(0.45, 0.7, 0.45), "category": "Dekoracje"},
+	"flowers": {"name": "Kwiaty", "size": Vector3(0.45, 0.7, 0.45), "category": "Dekoracje", "stackable": true, "footprint": Vector2(0.32, 0.32)},
 	"floor_lamp": {"name": "Lampa", "size": Vector3(0.45, 1.65, 0.45), "category": "Dekoracje"},
-	"kitchen_cabinet": {"name": "Szafka", "size": Vector3(0.6, 0.9, 0.6), "category": "Kuchnia"},
+	"kitchen_cabinet": {"name": "Szafka", "size": Vector3(0.6, 0.9, 0.6), "category": "Kuchnia", "surface": true},
 	"kitchen_sink": {"name": "Zlew", "size": Vector3(0.8, 1.15, 0.6), "category": "Kuchnia"},
 	"cooker": {"name": "Kuchenka", "size": Vector3(0.6, 0.9, 0.6), "category": "Kuchnia"},
-	"fridge": {"name": "Lodówka", "size": Vector3(0.7, 1.85, 0.7), "category": "Kuchnia"},
-	"dishwasher": {"name": "Zmywarka", "size": Vector3(0.6, 0.85, 0.6), "category": "Kuchnia"},
-	"kitchen_island": {"name": "Wyspa", "size": Vector3(1.5, 0.9, 0.8), "category": "Kuchnia"},
+	"fridge": {"name": "Lodówka", "size": Vector3(0.7, 1.85, 0.7), "category": "Kuchnia", "surface": true},
+	"dishwasher": {"name": "Zmywarka", "size": Vector3(0.6, 0.85, 0.6), "category": "Kuchnia", "surface": true},
+	"kitchen_island": {"name": "Wyspa", "size": Vector3(1.5, 0.9, 0.8), "category": "Kuchnia", "surface": true},
 	"bathtub": {"name": "Wanna", "size": Vector3(0.8, 0.6, 1.7), "category": "Łazienka"},
 	"toilet": {"name": "Toaleta", "size": Vector3(0.42, 0.8, 0.7), "category": "Łazienka"},
 	"bathroom_vanity": {"name": "Umywalka", "size": Vector3(0.7, 1.05, 0.5), "category": "Łazienka"},
 	"shower": {"name": "Prysznic", "size": Vector3(0.9, 2.1, 0.9), "category": "Łazienka"},
-	"washing_machine": {"name": "Pralka", "size": Vector3(0.6, 0.85, 0.6), "category": "Łazienka"},
+	"washing_machine": {"name": "Pralka", "size": Vector3(0.6, 0.85, 0.6), "category": "Łazienka", "surface": true},
+	"table_lamp": {"name": "Lampka stołowa", "size": Vector3(0.28, 0.45, 0.28), "category": "Dekoracje", "stackable": true, "footprint": Vector2(0.25, 0.25)},
+	"potted_plant": {"name": "Mała roślina", "size": Vector3(0.3, 0.55, 0.3), "category": "Dekoracje", "stackable": true, "footprint": Vector2(0.25, 0.25)},
 }
 const WALL_INSET := 0.05
 
 var selected: FurnitureItem
 var preview: FurnitureItem
 var moving: FurnitureItem
+var preview_attached: Array[FurnitureItem] = []
 var candidate_valid := false
 var room: Node
 var camera: Camera3D
@@ -58,17 +61,122 @@ func get_catalog() -> Dictionary:
 	return CATALOG.duplicate(true)
 
 
-func _make_item(type_id: String) -> FurnitureItem:
+func _find_item(id: String) -> FurnitureItem:
+	if id.is_empty():
+		return null
+	for child in get_children():
+		if child is FurnitureItem and child != preview and child.furniture_id == id:
+			return child
+	return null
+
+
+func _supported_by(support: FurnitureItem) -> Array[FurnitureItem]:
+	var items: Array[FurnitureItem] = []
+	for child in get_children():
+		if child is FurnitureItem and child != preview and child.support_id == support.furniture_id:
+			items.append(child)
+	return items
+
+
+func _surface_size(support: FurnitureItem) -> Vector2:
+	# Inset from edges and handles; all allowed providers have a solid top here.
+	return Vector2(support.size.x - 0.04, support.size.z - 0.06)
+
+
+func _footprint(item: FurnitureItem) -> Vector2:
+	return CATALOG[item.type_id].get("footprint", Vector2(item.size.x, item.size.z))
+
+
+func _supported_pose(item: FurnitureItem, pose: Dictionary, poses: Dictionary) -> bool:
+	var at: Vector3 = pose["position"]
+	var support_id: String = pose["support_id"]
+	if item.placement == "wall":
+		return support_id.is_empty()
+	if support_id.is_empty():
+		return absf(at.y) < 0.0001
+	if not CATALOG[item.type_id].get("stackable", false):
+		return false
+	var support := _find_item(support_id)
+	if support == null or support == item or not CATALOG[support.type_id].get("surface", false):
+		return false
+	if not support.support_id.is_empty():
+		return false
+	var support_at: Vector3 = support.position
+	var support_yaw: float = support.rotation.y
+	if poses.has(support):
+		support_at = poses[support]["position"]
+		support_yaw = poses[support]["yaw"]
+	if absf(at.y - support_at.y - support.size.y) > 0.0001:
+		return false
+	var half := _surface_size(support) / 2
+	var footprint := _footprint(item)
+	for x in [-1, 1]:
+		for z in [-1, 1]:
+			var corner := at + Vector3(x * footprint.x / 2, 0, z * footprint.y / 2).rotated(Vector3.UP, pose["yaw"])
+			var local := (corner - support_at).rotated(Vector3.UP, -support_yaw)
+			if absf(local.x) > half.x + 0.0001 or absf(local.z + 0.015) > half.y + 0.0001:
+				return false
+	return true
+
+
+func _proposed_poses(item: FurnitureItem, at: Vector3, yaw: float, support_id: String) -> Dictionary:
+	var poses := {item: {"position": at, "yaw": yaw, "support_id": support_id}}
+	var change := yaw - item.rotation.y
+	for attached in _supported_by(item):
+		poses[attached] = {"position": at + (attached.position - item.position).rotated(Vector3.UP, change), "yaw": attached.rotation.y + change, "support_id": attached.support_id}
+	return poses
+
+
+func _can_transform(item: FurnitureItem, at: Vector3, yaw: float, support_id: String, wall_id: String = "") -> bool:
+	if not at.is_finite() or not is_finite(yaw):
+		return false
+	var poses := _proposed_poses(item, at, yaw, support_id)
+	for candidate in poses:
+		var pose: Dictionary = poses[candidate]
+		if not _fits_room(candidate, pose["position"], pose["yaw"], room.get_floor_bounds(), wall_id if candidate == item else "") or not _supported_pose(candidate, pose, poses):
+			return false
+		for other in get_children():
+			if not other is FurnitureItem or other == preview or other == candidate:
+				continue
+			var other_at: Vector3 = poses[other]["position"] if poses.has(other) else other.position
+			var other_yaw: float = poses[other]["yaw"] if poses.has(other) else other.rotation.y
+			if _vertical_overlap(candidate, pose["position"], other, other_at) and _overlaps(_corners(candidate, pose["position"], pose["yaw"]), _corners(other, other_at, other_yaw)):
+				return false
+	return true
+
+
+func _apply_transform(item: FurnitureItem, at: Vector3, yaw: float, support_id: String) -> void:
+	var poses := _proposed_poses(item, at, yaw, support_id)
+	for candidate in poses:
+		candidate.position = poses[candidate]["position"]
+		candidate.rotation.y = poses[candidate]["yaw"]
+		candidate.support_id = poses[candidate]["support_id"]
+
+
+func spawn_on_surface(type_id: String, support_id: String, offset: Vector2 = Vector2.ZERO) -> FurnitureItem:
+	var support := _find_item(support_id)
+	if support == null:
+		return null
+	var at := support.position + Vector3(offset.x, support.size.y, offset.y - 0.015).rotated(Vector3.UP, support.rotation.y)
+	return spawn_furniture(type_id, at, support_id, support.rotation.y)
+
+
+func _new_item(type_id: String) -> FurnitureItem:
 	var item := FurnitureItem.new()
 	item.type_id = type_id
 	item.size = CATALOG[type_id]["size"]
 	item.placement = CATALOG[type_id].get("placement", "floor")
 	item.furniture_id = Crypto.new().generate_random_bytes(16).hex_encode()
+	return item
+
+
+func _make_item(type_id: String) -> FurnitureItem:
+	var item := _new_item(type_id)
 	add_child(item)
 	return item
 
 
-func spawn_furniture(type_id: String, at: Vector3) -> FurnitureItem:
+func spawn_furniture(type_id: String, at: Vector3, support_id: String = "", yaw: float = 0.0) -> FurnitureItem:
 	if not CATALOG.has(type_id):
 		status_changed.emit("Nieznany typ mebla")
 		return null
@@ -76,12 +184,14 @@ func spawn_furniture(type_id: String, at: Vector3) -> FurnitureItem:
 		status_changed.emit("Okno wymaga ściany: użyj katalogu lub spawn_window")
 		return null
 	var item := _make_item(type_id)
-	if not is_placement_valid(item, at, 0.0):
+	item.support_id = support_id
+	if not is_placement_valid(item, at, yaw):
 		remove_child(item)
 		item.queue_free()
 		status_changed.emit("Brak miejsca: ściana lub inny mebel")
 		return null
-	item.position = Vector3(at.x, 0, at.z)
+	item.position = at
+	item.rotation.y = yaw
 	_select(item)
 	furniture_changed.emit()
 	status_changed.emit("Dodano: " + str(CATALOG[item.type_id]["name"]))
@@ -115,6 +225,8 @@ func begin_placement(type_id: String) -> void:
 	preview.collision_layer = 0
 	preview.visible = false
 	status_changed.emit("Wskaż miejsce. Kliknij, aby ustawić; Esc — anuluj")
+	if CATALOG[type_id].get("stackable", false):
+		status_changed.emit("Wskaż podłogę lub blat mebla; zielony kolor pozwala ustawić")
 	if preview.placement == "wall":
 		status_changed.emit("Wskaż widoczną ścianę. Kliknij, aby wstawić okno; Esc — anuluj")
 
@@ -128,6 +240,14 @@ func begin_move_selected() -> void:
 	preview = _make_item(moving.type_id)
 	preview.rotation.y = moving.rotation.y
 	preview.wall_id = moving.wall_id
+	preview.support_id = moving.support_id
+	for attached in _supported_by(moving):
+		var ghost := _new_item(attached.type_id)
+		preview.add_child(ghost)
+		ghost.position = (attached.position - moving.position).rotated(Vector3.UP, -moving.rotation.y)
+		ghost.rotation.y = attached.rotation.y - moving.rotation.y
+		ghost.collision_layer = 0
+		preview_attached.append(ghost)
 	preview.collision_layer = 0
 	preview.visible = false
 	status_changed.emit("Wskaż nowe miejsce; Esc — anuluj")
@@ -140,6 +260,7 @@ func cancel_placement() -> void:
 		remove_child(preview)
 		preview.queue_free()
 	preview = null
+	preview_attached.clear()
 	moving = null
 	candidate_valid = false
 	if was_active:
@@ -168,11 +289,16 @@ func _select(item: FurnitureItem) -> void:
 	selection_changed.emit(selected)
 
 
-func move_selected(at: Vector3) -> bool:
-	if selected == null or not is_placement_valid(selected, at, selected.rotation.y, selected):
-		status_changed.emit("Nie można przenieść mebla w to miejsce")
+func move_selected(at: Vector3, support_id: String = "") -> bool:
+	if selected == null:
 		return false
-	selected.position = at if selected.placement == "wall" else Vector3(at.x, 0, at.z)
+	var next_support := support_id
+	if next_support.is_empty() and at.y > 0.001 and selected.placement != "wall":
+		next_support = selected.support_id
+	if not _can_transform(selected, at, selected.rotation.y, next_support):
+		status_changed.emit("Nie można przenieść: brak podparcia lub kolizja")
+		return false
+	_apply_transform(selected, at, selected.rotation.y, next_support)
 	furniture_changed.emit()
 	return true
 
@@ -187,7 +313,7 @@ func rotate_selected(angle: float) -> bool:
 	if not is_placement_valid(selected, selected.position, yaw, selected):
 		status_changed.emit("Obrót zablokowany: ściana lub inny mebel")
 		return false
-	selected.rotation.y = yaw
+	_apply_transform(selected, selected.position, yaw, selected.support_id)
 	furniture_changed.emit()
 	return true
 
@@ -197,6 +323,9 @@ func delete_selected() -> void:
 	if selected == null:
 		return
 	var item := selected
+	if not _supported_by(item).is_empty():
+		status_changed.emit("Najpierw przenieś lub usuń przedmioty z blatu")
+		return
 	_select(null)
 	remove_child(item)
 	item.queue_free()
@@ -251,38 +380,29 @@ func _overlaps(a: Array[Vector2], b: Array[Vector2]) -> bool:
 
 
 func is_placement_valid(item: FurnitureItem, at: Vector3, yaw: float, ignore: FurnitureItem = null) -> bool:
-	if not at.is_finite() or not is_finite(yaw):
-		return false
-	if item.placement == "floor":
-		at.y = 0
-	var points := _corners(item, at, yaw)
-	if not _fits_room(item, at, yaw, room.get_floor_bounds()):
-		return false
-	for other in get_children():
-		if other is FurnitureItem and other != item and other != preview and other != ignore:
-			if _vertical_overlap(item, at, other, other.position) and _overlaps(points, _corners(other, other.position, other.rotation.y)):
-				return false
-	return true
+	var subject := ignore if ignore != null else item
+	return _can_transform(subject, at, yaw, item.support_id, item.wall_id)
 
 
 func _vertical_overlap(a: FurnitureItem, at: Vector3, b: FurnitureItem, bt: Vector3) -> bool:
 	return at.y < bt.y + b.size.y - 0.00001 and bt.y < at.y + a.size.y - 0.00001
 
 
-func _fits_room(item: FurnitureItem, at: Vector3, yaw: float, bounds: Dictionary) -> bool:
+func _fits_room(item: FurnitureItem, at: Vector3, yaw: float, bounds: Dictionary, wall_override: String = "") -> bool:
 	if item.placement != "wall":
-		return _inside(_corners(item, at, yaw), bounds)
-	if not item.wall_id in ["FrontWall", "BackWall", "LeftWall", "RightWall"]:
+		return at.y >= -0.0001 and at.y + item.size.y <= RoomGeometry.WALL_HEIGHT + 0.0001 and _inside(_corners(item, at, yaw), bounds)
+	var wall := item.wall_id if wall_override.is_empty() else wall_override
+	if not wall in ["FrontWall", "BackWall", "LeftWall", "RightWall"]:
 		return false
 	if at.y < 0.15 or at.y + item.size.y > RoomGeometry.WALL_HEIGHT - 0.1:
 		return false
-	if absf(wrapf(yaw - _wall_yaw(item.wall_id), -PI, PI)) > 0.001:
+	if absf(wrapf(yaw - _wall_yaw(wall), -PI, PI)) > 0.001:
 		return false
-	var offset := _wall_offset(item.wall_id, at)
-	if at.distance_to(_wall_position(item.wall_id, offset, at.y, bounds)) > 0.001:
+	var offset := _wall_offset(wall, at)
+	if at.distance_to(_wall_position(wall, offset, at.y, bounds)) > 0.001:
 		return false
 	var maximum: Vector2 = bounds["max"]
-	var half_span := maximum.x if item.wall_id in ["FrontWall", "BackWall"] else maximum.y
+	var half_span := maximum.x if wall in ["FrontWall", "BackWall"] else maximum.y
 	return absf(offset) + item.size.x / 2 <= half_span - 0.1
 
 
@@ -378,6 +498,38 @@ func _floor_point():
 	return Plane(Vector3.UP, 0).intersects_ray(origin, direction)
 
 
+func _surface_point() -> Dictionary:
+	var mouse := get_viewport().get_mouse_position()
+	var origin := camera.project_ray_origin(mouse)
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + camera.project_ray_normal(mouse) * 200, 2)
+	var excluded: Array[RID] = []
+	if moving != null:
+		excluded.append(moving.get_rid())
+		for attached in _supported_by(moving):
+			excluded.append(attached.get_rid())
+	query.exclude = excluded
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return {"position": _floor_point(), "support_id": "", "top": true}
+	var support := hit["collider"] as FurnitureItem
+	if support == null:
+		return {"position": null, "support_id": "", "top": false}
+	var at: Vector3 = hit["position"]
+	at.y = support.position.y + support.size.y
+	var local := (at - support.position).rotated(Vector3.UP, -support.rotation.y)
+	var footprint := _footprint(preview)
+	var relative_yaw := preview.rotation.y - support.rotation.y
+	var c := absf(cos(relative_yaw))
+	var s := absf(sin(relative_yaw))
+	var extent := Vector2(c * footprint.x + s * footprint.y, s * footprint.x + c * footprint.y) / 2
+	var available := _surface_size(support) / 2 - extent
+	if available.x >= 0 and available.y >= 0:
+		local.x = clampf(local.x, -available.x, available.x)
+		local.z = clampf(local.z, -available.y - 0.015, available.y - 0.015)
+		at = support.position + local.rotated(Vector3.UP, support.rotation.y)
+	return {"position": at, "support_id": support.furniture_id, "top": hit["normal"].y > 0.5}
+
+
 func _process(_delta: float) -> void:
 	_process_rotation(_delta)
 	if camera != null:
@@ -389,18 +541,28 @@ func _process(_delta: float) -> void:
 	if preview == null or camera == null:
 		return
 	var point = _floor_point()
+	var top_valid := true
+	if CATALOG[preview.type_id].get("stackable", false):
+		var surface_hit := _surface_point()
+		point = surface_hit["position"]
+		preview.support_id = surface_hit["support_id"]
+		top_valid = surface_hit["top"]
+	else:
+		preview.support_id = ""
 	if preview.placement == "wall":
 		var wall_hit := _wall_point()
 		point = wall_hit.get("position")
 		if not wall_hit.is_empty():
 			preview.wall_id = wall_hit["wall"]
 			preview.rotation.y = _wall_yaw(preview.wall_id)
-	candidate_valid = point != null and get_viewport().gui_get_hovered_control() == null
+	candidate_valid = point != null and top_valid and get_viewport().gui_get_hovered_control() == null
 	preview.visible = point != null
 	if point != null:
 		preview.position = point
 		candidate_valid = candidate_valid and is_placement_valid(preview, point, preview.rotation.y, moving)
 	preview.set_highlight("valid" if candidate_valid else "invalid")
+	for attached in preview_attached:
+		attached.set_highlight("valid" if candidate_valid else "invalid")
 
 
 func start_rotation(source: String, direction: float) -> void:
@@ -435,7 +597,7 @@ func _set_active_angle(angle: float) -> bool:
 		if not is_placement_valid(item, item.position, item.rotation.y + difference * float(i) / steps, item):
 			status_changed.emit("Wyrównanie zablokowane: ściana lub inny mebel")
 			return false
-	item.rotation.y = wrapf(angle, -PI, PI)
+	_apply_transform(item, item.position, wrapf(angle, -PI, PI), item.support_id)
 	furniture_changed.emit()
 	return true
 
@@ -516,9 +678,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				status_changed.emit("Brak miejsca: ściana lub inny mebel")
 				return
 			var item := moving if moving != null else preview
-			item.position = preview.position
-			item.rotation.y = preview.rotation.y
 			item.wall_id = preview.wall_id
+			_apply_transform(item, preview.position, preview.rotation.y, preview.support_id)
 			if moving == null:
 				preview.collision_layer = 2
 				preview = null

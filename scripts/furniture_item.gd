@@ -5,6 +5,7 @@ var furniture_id: String
 var type_id := "table"
 var placement := "floor"
 var wall_id := ""
+var support_id := ""
 var size := Vector3(1.4, 0.75, 0.8)
 var surfaces: Array[MeshInstance3D] = []
 var original_materials: Array[Material] = []
@@ -121,7 +122,7 @@ func _build_model() -> void:
 func to_record() -> Dictionary:
 	return {"id": furniture_id, "type_id": type_id,
 		"position": [position.x, position.y, position.z], "rotation_y": rotation.y,
-		"placement": placement, "wall_id": wall_id}
+		"placement": placement, "wall_id": wall_id, "support_id": support_id}
 
 
 const WHITE := Color("ece9e2")
@@ -224,6 +225,16 @@ func _build_interior_model() -> void:
 					var at := Vector3(cos(i * 2.4) * 0.12, 0, sin(i * 2.4) * 0.12)
 					_add_round(0.007, 0.35, at + Vector3(0, 0.4, 0), GREEN)
 					_add_ellipsoid(Vector3(0.13, 0.13, 0.13), at + Vector3(0, 0.6 + (i % 2) * 0.03, 0), Color("e5a1ac"))
+		"table_lamp":
+			_add_round(0.12, 0.035, Vector3(0, 0.0175, 0), BLACK)
+			_add_round(0.012, 0.28, Vector3(0, 0.17, 0), METAL)
+			_add_round(0.14, 0.16, Vector3(0, 0.37, 0), LINEN, 0.09)
+		"potted_plant":
+			_add_round(0.085, 0.16, Vector3(0, 0.08, 0), WHITE, 0.12)
+			_add_round(0.11, 0.008, Vector3(0, 0.155, 0), DARK_WOOD)
+			_add_round(0.008, 0.22, Vector3(0, 0.27, 0), GREEN)
+			for i in range(6):
+				_add_ellipsoid(Vector3(0.16, 0.08, 0.1), Vector3(cos(i * 2.4) * 0.065, 0.25 + i * 0.045, sin(i * 2.4) * 0.065), GREEN.lightened(i * 0.03))
 		"floor_lamp":
 			_add_round(0.2, 0.035, Vector3(0, 0.0175, 0), BLACK)
 			_add_round(0.018, 1.35, Vector3(0, 0.7, 0), METAL)
