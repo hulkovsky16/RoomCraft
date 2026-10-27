@@ -76,7 +76,7 @@ func run() -> void:
 	check(not system.move_selected(Vector3(0,0,-1.7)), "Group move blocked by attached decor hitting window")
 	check(stand.position == Vector3.ZERO and flowers.position.y == 0.5, "Failed group move changes nothing")
 	system._select(flowers)
-	check(not system.rotate_selected(PI/4), "Rotated footprint must still fit narrow top")
+	check(system.rotate_selected(PI/4), "Round pot fits narrow top at any rotation")
 	system.delete_selected()
 	system._select(stand)
 	system.delete_selected()

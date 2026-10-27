@@ -9,6 +9,8 @@ var support_id := ""
 var size := Vector3(1.4, 0.75, 0.8)
 var surfaces: Array[MeshInstance3D] = []
 var original_materials: Array[Material] = []
+var collision_vertices: Array[PackedVector3Array] = []
+var precise_collision := false
 var material := StandardMaterial3D.new()
 const WOOD := Color("a87545")
 const DARK_WOOD := Color("5e4432")
@@ -22,6 +24,17 @@ func _ready() -> void:
 	collision_mask = 0
 	material.roughness = 0.8
 	_build_model()
+	if precise_collision:
+		for i in range(surfaces.size()):
+			var points := PackedVector3Array()
+			for vertex in collision_vertices[i]:
+				points.append(surfaces[i].transform * vertex)
+			var shape := ConvexPolygonShape3D.new()
+			shape.points = points
+			var collision := CollisionShape3D.new()
+			collision.shape = shape
+			add_child(collision)
+		return
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size
@@ -43,6 +56,7 @@ func _add_box(dimensions: Vector3, offset: Vector3, color: Color = WOOD) -> void
 	add_child(visual)
 	surfaces.append(visual)
 	original_materials.append(surface_material)
+	collision_vertices.append(visual.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX])
 
 
 func set_highlight(state: String) -> void:
@@ -165,6 +179,7 @@ func _add_mesh(mesh: Mesh, at: Vector3, color: Color, angles: Vector3 = Vector3.
 	add_child(visual)
 	surfaces.append(visual)
 	original_materials.append(surface)
+	collision_vertices.append(visual.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX])
 	return visual
 
 

@@ -19,7 +19,7 @@ const CATALOG := {
 	"window": {"name": "Okno", "size": Vector3(1.2, 1.1, 0.16), "category": "Okna", "placement": "wall"},
 	"tv_console": {"name": "Telewizor + RTV", "size": Vector3(1.4, 1.25, 0.4), "category": "Dekoracje"},
 	"plant": {"name": "Roślina", "size": Vector3(0.65, 1.3, 0.65), "category": "Dekoracje"},
-	"flowers": {"name": "Kwiaty", "size": Vector3(0.45, 0.7, 0.45), "category": "Dekoracje", "stackable": true, "footprint": Vector2(0.32, 0.32)},
+	"flowers": {"name": "Kwiaty", "size": Vector3(0.45, 0.7, 0.45), "category": "Dekoracje", "stackable": true, "round_base": true, "footprint": Vector2(0.32, 0.32)},
 	"floor_lamp": {"name": "Lampa", "size": Vector3(0.45, 1.65, 0.45), "category": "Dekoracje"},
 	"kitchen_cabinet": {"name": "Szafka", "size": Vector3(0.6, 0.9, 0.6), "category": "Kuchnia", "surface": true},
 	"kitchen_sink": {"name": "Zlew", "size": Vector3(0.8, 1.15, 0.6), "category": "Kuchnia"},
@@ -32,8 +32,8 @@ const CATALOG := {
 	"bathroom_vanity": {"name": "Umywalka", "size": Vector3(0.7, 1.05, 0.5), "category": "Łazienka"},
 	"shower": {"name": "Prysznic", "size": Vector3(0.9, 2.1, 0.9), "category": "Łazienka"},
 	"washing_machine": {"name": "Pralka", "size": Vector3(0.6, 0.85, 0.6), "category": "Łazienka", "surface": true},
-	"table_lamp": {"name": "Lampka stołowa", "size": Vector3(0.28, 0.45, 0.28), "category": "Dekoracje", "stackable": true, "footprint": Vector2(0.25, 0.25)},
-	"potted_plant": {"name": "Mała roślina", "size": Vector3(0.3, 0.55, 0.3), "category": "Dekoracje", "stackable": true, "footprint": Vector2(0.25, 0.25)},
+	"table_lamp": {"name": "Lampka stołowa", "size": Vector3(0.28, 0.45, 0.28), "category": "Dekoracje", "stackable": true, "round_base": true, "footprint": Vector2(0.25, 0.25)},
+	"potted_plant": {"name": "Mała roślina", "size": Vector3(0.3, 0.55, 0.3), "category": "Dekoracje", "stackable": true, "round_base": true, "footprint": Vector2(0.25, 0.25)},
 }
 const WALL_INSET := 0.05
 
@@ -42,6 +42,8 @@ var preview: FurnitureItem
 var moving: FurnitureItem
 var preview_attached: Array[FurnitureItem] = []
 var candidate_valid := false
+var placement_error := ""
+var last_preview_message := ""
 var room: Node
 var camera: Camera3D
 var rotation_holds: Dictionary = {}
@@ -110,6 +112,10 @@ func _supported_pose(item: FurnitureItem, pose: Dictionary, poses: Dictionary) -
 		return false
 	var half := _surface_size(support) / 2
 	var footprint := _footprint(item)
+	if CATALOG[item.type_id].get("round_base", false):
+		var center := (at - support_at).rotated(Vector3.UP, -support_yaw)
+		var radius := footprint.x / 2
+		return absf(center.x) + radius <= half.x + 0.0001 and absf(center.z + 0.015) + radius <= half.y + 0.0001
 	for x in [-1, 1]:
 		for z in [-1, 1]:
 			var corner := at + Vector3(x * footprint.x / 2, 0, z * footprint.y / 2).rotated(Vector3.UP, pose["yaw"])
@@ -133,14 +139,19 @@ func _can_transform(item: FurnitureItem, at: Vector3, yaw: float, support_id: St
 	var poses := _proposed_poses(item, at, yaw, support_id)
 	for candidate in poses:
 		var pose: Dictionary = poses[candidate]
-		if not _fits_room(candidate, pose["position"], pose["yaw"], room.get_floor_bounds(), wall_id if candidate == item else "") or not _supported_pose(candidate, pose, poses):
+		if not _fits_room(candidate, pose["position"], pose["yaw"], room.get_floor_bounds(), wall_id if candidate == item else ""):
+			placement_error = "Przedmiot wychodzi poza pokój"
+			return false
+		if not _supported_pose(candidate, pose, poses):
+			placement_error = "Brak pełnego podparcia lub niedozwolony blat"
 			return false
 		for other in get_children():
 			if not other is FurnitureItem or other == preview or other == candidate:
 				continue
 			var other_at: Vector3 = poses[other]["position"] if poses.has(other) else other.position
 			var other_yaw: float = poses[other]["yaw"] if poses.has(other) else other.rotation.y
-			if _vertical_overlap(candidate, pose["position"], other, other_at) and _overlaps(_corners(candidate, pose["position"], pose["yaw"]), _corners(other, other_at, other_yaw)):
+			if _objects_overlap(candidate, pose["position"], pose["yaw"], other, other_at, other_yaw):
+				placement_error = "Kolizja z: " + str(CATALOG[other.type_id]["name"])
 				return false
 	return true
 
@@ -166,6 +177,7 @@ func _new_item(type_id: String) -> FurnitureItem:
 	item.type_id = type_id
 	item.size = CATALOG[type_id]["size"]
 	item.placement = CATALOG[type_id].get("placement", "floor")
+	item.precise_collision = CATALOG[type_id].get("stackable", false)
 	item.furniture_id = Crypto.new().generate_random_bytes(16).hex_encode()
 	return item
 
@@ -263,6 +275,7 @@ func cancel_placement() -> void:
 	preview_attached.clear()
 	moving = null
 	candidate_valid = false
+	last_preview_message = ""
 	if was_active:
 		status_changed.emit("Anulowano")
 
@@ -438,7 +451,7 @@ func can_resize_room(width: float, length: float) -> bool:
 			status_changed.emit("Najpierw przesuń meble — pokój jest za mały")
 			return false
 		for i in range(items.size()):
-			if _vertical_overlap(item, at, items[i], positions[i]) and _overlaps(_corners(item, at, item.rotation.y), _corners(items[i], positions[i], items[i].rotation.y)):
+			if _objects_overlap(item, at, item.rotation.y, items[i], positions[i], items[i].rotation.y):
 				status_changed.emit("Zmiana rozmiaru powoduje kolizję z oknem")
 				return false
 		items.append(item)
@@ -522,6 +535,8 @@ func _surface_point() -> Dictionary:
 	var c := absf(cos(relative_yaw))
 	var s := absf(sin(relative_yaw))
 	var extent := Vector2(c * footprint.x + s * footprint.y, s * footprint.x + c * footprint.y) / 2
+	if CATALOG[preview.type_id].get("round_base", false):
+		extent = footprint / 2
 	var available := _surface_size(support) / 2 - extent
 	if available.x >= 0 and available.y >= 0:
 		local.x = clampf(local.x, -available.x, available.x)
@@ -563,6 +578,15 @@ func _process(_delta: float) -> void:
 	preview.set_highlight("valid" if candidate_valid else "invalid")
 	for attached in preview_attached:
 		attached.set_highlight("valid" if candidate_valid else "invalid")
+	if get_viewport().gui_get_hovered_control() == null:
+		var message := "Można ustawić — kliknij LPM" if candidate_valid else placement_error
+		if point == null:
+			message = "Wskaż podłogę lub powierzchnię"
+		elif not top_valid:
+			message = "Wskaż blat od góry"
+		if message != last_preview_message:
+			last_preview_message = message
+			status_changed.emit(message)
 
 
 func start_rotation(source: String, direction: float) -> void:
@@ -675,7 +699,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if preview != null:
 			_process(0)
 			if not candidate_valid:
-				status_changed.emit("Brak miejsca: ściana lub inny mebel")
+				status_changed.emit(last_preview_message)
 				return
 			var item := moving if moving != null else preview
 			item.wall_id = preview.wall_id
@@ -694,3 +718,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			var hit := get_world_3d().direct_space_state.intersect_ray(query)
 			_select(hit.get("collider") as FurnitureItem)
 		get_viewport().set_input_as_handled()
+
+
+func _objects_overlap(a: FurnitureItem, at: Vector3, yaw: float, b: FurnitureItem, bt: Vector3, byaw: float) -> bool:
+	if not _vertical_overlap(a, at, b, bt) or not _overlaps(_corners(a, at, yaw), _corners(b, bt, byaw)):
+		return false
+	if a.precise_collision and b.precise_collision:
+		return DecorCollision.overlaps(a, at, yaw, b, bt, byaw)
+	return true
