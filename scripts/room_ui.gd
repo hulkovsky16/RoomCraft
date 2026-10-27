@@ -1,8 +1,8 @@
 
 extends Control
 
-@onready var width_input: SpinBox = $SettingsPanel/Content/WidthInput
-@onready var length_input: SpinBox = $SettingsPanel/Content/LengthInput
+@onready var width_input: LineEdit = $SettingsPanel/Content/WidthInput
+@onready var length_input: LineEdit = $SettingsPanel/Content/LengthInput
 @onready var status_label: Label = $SettingsPanel/Content/StatusLabel
 @onready var apply_button: Button = $SettingsPanel/Content/ApplyButton
 
@@ -10,16 +10,6 @@ var room_controller: Node
 
 
 func _ready() -> void:
-	width_input.min_value = 3.0
-	width_input.max_value = 10.0
-	width_input.step = 0.5
-	width_input.value = 5.0
-
-	length_input.min_value = 3.0
-	length_input.max_value = 10.0
-	length_input.step = 0.5
-	length_input.value = 4.0
-
 	var current: Node = get_parent()
 
 	while current != null:
@@ -29,30 +19,28 @@ func _ready() -> void:
 		current = current.get_parent()
 
 	apply_button.pressed.connect(_on_apply_pressed)
-	# Keep focus changes from committing one field after the room signal resets it.
+	width_input.text_submitted.connect(func(_text): _on_apply_pressed())
+	length_input.text_submitted.connect(func(_text): _on_apply_pressed())
 	apply_button.focus_mode = Control.FOCUS_NONE
 	if room_controller != null:
 		room_controller.room_size_changed.connect(_sync_room_size)
 
 
 func _sync_room_size(width: float, length: float) -> void:
-	width_input.value = width
-	length_input.value = length
+	width_input.text = String.num(width, 3)
+	length_input.text = String.num(length, 3)
 
 
 func _on_apply_pressed() -> void:
 	if room_controller == null:
 		status_label.text = "Помилка: кімнату не знайдено"
 		return
-	# SpinBox text and its numeric value can differ until editing is committed.
-	# Commit both before set_room_size emits the signal that rewrites the fields.
-	width_input.apply()
-	length_input.apply()
-
-	var success: bool = room_controller.set_room_size(
-		width_input.value,
-		length_input.value
-	)
+	var width: float = width_input.read_value()
+	var length: float = length_input.read_value()
+	if not is_finite(width) or not is_finite(length) or width < 3 or width > 10 or length < 3 or length > 10:
+		status_label.text = "Podaj liczby od 3 do 10 m (np. 5,5)"
+		return
+	var success: bool = room_controller.set_room_size(width, length)
 
 	if success:
 		status_label.text = "Wymiary zaktualizowane"

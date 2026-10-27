@@ -41,6 +41,9 @@ var moving: FurnitureItem
 var candidate_valid := false
 var room: Node
 var camera: Camera3D
+var rotation_holds: Dictionary = {}
+var rotation_hold_time := 0.0
+const ROTATION_SPEED := 90.0
 
 
 func _ready() -> void:
@@ -131,6 +134,7 @@ func begin_move_selected() -> void:
 
 
 func cancel_placement() -> void:
+	stop_all_rotation()
 	var was_active := preview != null
 	if is_instance_valid(preview):
 		remove_child(preview)
@@ -155,6 +159,7 @@ func rotate_active(angle: float) -> void:
 
 
 func _select(item: FurnitureItem) -> void:
+	stop_all_rotation()
 	if is_instance_valid(selected):
 		selected.set_highlight("")
 	selected = item
@@ -374,6 +379,7 @@ func _floor_point():
 
 
 func _process(_delta: float) -> void:
+	_process_rotation(_delta)
 	if camera != null:
 		for item in get_children():
 			if item is FurnitureItem and item != preview and item.placement == "wall":
@@ -397,6 +403,63 @@ func _process(_delta: float) -> void:
 	preview.set_highlight("valid" if candidate_valid else "invalid")
 
 
+func start_rotation(source: String, direction: float) -> void:
+	var item := preview if preview != null else selected
+	if item == null:
+		return
+	if item.placement == "wall":
+		status_changed.emit("Okno obraca się automatycznie do ściany")
+		return
+	if rotation_holds.has(source):
+		return
+	rotation_holds[source] = direction
+	rotation_hold_time = 0.0
+	rotate_active(deg_to_rad(15.0 * direction))
+
+
+func stop_rotation(source: String) -> void:
+	rotation_holds.erase(source)
+
+
+func stop_all_rotation() -> void:
+	rotation_holds.clear()
+	rotation_hold_time = 0.0
+
+
+func _process_rotation(delta: float) -> void:
+	if get_viewport().gui_get_focus_owner() is LineEdit:
+		stop_all_rotation()
+		return
+	if rotation_holds.is_empty():
+		return
+	var before := rotation_hold_time
+	rotation_hold_time += delta
+	var active_delta := maxf(0, rotation_hold_time - 0.25) - maxf(0, before - 0.25)
+	var direction := 0.0
+	for value in rotation_holds.values():
+		direction += value
+	var remaining := deg_to_rad(ROTATION_SPEED * minf(active_delta, 0.1) * clampf(direction, -1, 1))
+	# Small validated steps prevent a long frame from jumping over a collision.
+	while absf(remaining) > 0.00001:
+		var step := clampf(remaining, -deg_to_rad(2), deg_to_rad(2))
+		rotate_active(step)
+		remaining -= step
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		stop_all_rotation()
+
+
+func _input(event: InputEvent) -> void:
+	# Releases must be observed even when UI consumes the event.
+	if event is InputEventKey and not event.pressed:
+		if event.keycode == KEY_Q:
+			stop_rotation("key_q")
+		if event.keycode == KEY_E:
+			stop_rotation("key_e")
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
@@ -407,8 +470,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_G: begin_move_selected()
 			KEY_DELETE: delete_selected()
 			KEY_Q, KEY_E:
-				var angle := deg_to_rad(-15.0 if event.keycode == KEY_Q else 15.0)
-				rotate_active(angle)
+				start_rotation("key_q" if event.keycode == KEY_Q else "key_e", -1.0 if event.keycode == KEY_Q else 1.0)
 			_: return
 		get_viewport().set_input_as_handled()
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:

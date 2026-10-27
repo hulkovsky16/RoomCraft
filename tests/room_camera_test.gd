@@ -45,9 +45,9 @@ func run() -> void:
 	var camera = scene.get_node("Camera3D")
 	var furniture: FurnitureSystem = scene.get_node("FurnitureRoot")
 	for dimensions in [Vector2(6, 5), Vector2(8, 7), Vector2(5, 4)]:
-		ui.width_input.get_line_edit().grab_focus()
-		ui.width_input.get_line_edit().text = str(dimensions.x)
-		ui.length_input.get_line_edit().text = str(dimensions.y)
+		ui.width_input.grab_focus()
+		ui.width_input.text = str(dimensions.x)
+		ui.length_input.text = str(dimensions.y)
 		click(ui.apply_button)
 		await process_frame
 		check(scene.get_room_size() == dimensions, "Typed resize applied repeatedly: " + str(dimensions))
@@ -55,13 +55,13 @@ func run() -> void:
 	# Resize with furniture and a window, including a rejected resize and recovery.
 	var table := furniture.spawn_furniture("table", Vector3(1.5, 0, 0))
 	var window := furniture.spawn_window("FrontWall", 0)
-	ui.width_input.get_line_edit().text = "3"
-	ui.length_input.get_line_edit().text = "3"
+	ui.width_input.text = "3"
+	ui.length_input.text = "3"
 	click(ui.apply_button)
 	check(scene.get_room_size() == Vector2(5, 4), "Occupied room rejects invalid shrink")
-	check(ui.width_input.value == 5 and ui.length_input.value == 4, "Rejected resize restores displayed dimensions")
-	ui.width_input.get_line_edit().text = "7"
-	ui.length_input.get_line_edit().text = "6"
+	check(ui.width_input.read_value() == 5 and ui.length_input.read_value() == 4, "Rejected resize restores displayed dimensions")
+	ui.width_input.text = "7"
+	ui.length_input.text = "6"
 	click(ui.apply_button)
 	check(scene.get_room_size() == Vector2(7, 6), "Resize still works after rejection")
 	check(is_equal_approx(window.position.z, -3) and table.position.x == 1.5, "Resize preserves furniture and moves attached window")
@@ -101,12 +101,12 @@ func run() -> void:
 	key_event(KEY_SHIFT, false)
 	check(is_equal_approx(camera.position.distance_to(start), 3.0), "Shift boosts speed threefold")
 	start = camera.position
-	ui.width_input.get_line_edit().grab_focus()
+	ui.width_input.grab_focus()
 	key_event(KEY_UP, true)
 	camera._process(0.25)
 	key_event(KEY_UP, false)
 	check(camera.position == start, "Arrows do not fly while editing dimensions")
-	ui.width_input.get_line_edit().release_focus()
+	ui.width_input.release_focus()
 	key_event(KEY_RIGHT, true)
 	camera._notification(Node.NOTIFICATION_WM_WINDOW_FOCUS_OUT)
 	camera._process(0.25)

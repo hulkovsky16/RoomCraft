@@ -51,7 +51,15 @@ func _ready() -> void:
 		var button := Button.new()
 		button.text = entry[0]
 		button.focus_mode = Control.FOCUS_NONE
-		button.pressed.connect(entry[1])
+		if entry[0].begins_with("Obróć"):
+			var direction := -1.0 if entry[0].contains("lewo") else 1.0
+			var source := "ui_left" if direction < 0 else "ui_right"
+			button.name = "RotateLeft" if direction < 0 else "RotateRight"
+			button.button_down.connect(system.start_rotation.bind(source, direction))
+			button.button_up.connect(system.stop_rotation.bind(source))
+			button.mouse_exited.connect(system.stop_rotation.bind(source))
+		else:
+			button.pressed.connect(entry[1])
 		content.add_child(button)
 	var selection := Label.new()
 	selection.text = "Wybrano: —"
@@ -66,7 +74,7 @@ func _ready() -> void:
 	content.add_child(status)
 	system.status_changed.connect(func(message): status.text = message)
 	var help := Label.new()
-	help.text = "Kamera: strzałki — lot; Shift — szybciej\nPgUp / PgDn — góra / dół\nPPM — obrót, ŚPM — ruch\nKółko — zoom; R — reset\nMeble: LPM — wybór / zatwierdzenie"
+	help.text = "Strzałki — lot; Shift — szybciej\nPgUp / PgDn — góra / dół\nPPM — obrót; R — widok pokoju\nKółko — zoom; ŚPM — ruch\nPrzytrzymaj Q/E — obrót mebla"
 	content.add_child(help)
 
 
