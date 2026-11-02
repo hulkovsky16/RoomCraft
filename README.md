@@ -213,3 +213,21 @@ if not result.ok:
 Задачи участника №3: подключить окончательный интерфейс к публичным методам и сигналам; кнопки файлового сохранения/загрузки вызывают модуль участника №4. Временный `FurnitureDebugUI` можно заменить.
 
 Регрессия: `godot --headless --path . --script res://tests/furniture_restore_test.gd`. Проверяет JSON round-trip, окна, декор перед опорой, сохранение ID, ошибочные записи без изменения текущей сцены, пустую расстановку и старые записи.
+
+## Zapis, odczyt i wydanie Windows (uczestnik 4)
+
+W panelu pokoju wybierz **Zapisz projekt** lub **Wczytaj projekt**, a następnie plik JSON. Format v1 obejmuje szerokość i długość w metrach, kolory RGBA ścian i podłogi oraz komplet rekordów z `FurnitureSystem.get_all_furniture()`. Zapis obejmuje zatwierdzone przedmioty. Przy odczycie wymiary są sprawdzane według ograniczeń bieżącej wersji RoomGeometry. Błędny plik pozostawia dotychczasowy pokój i rozpoczętą edycję bez zmian.
+
+UI może wywołać `ProjectStore.save_project(path, room)` (kod Error) oraz `ProjectStore.load_project(path, room)` (słownik z polem ok i komunikatem error w razie błędu).
+
+Test i eksport (Godot 4.7.2 oraz odpowiadające mu szablony eksportu):
+
+~~~powershell
+godot --headless --editor --import --quit --path .
+godot --headless --path . --script res://tests/project_store_test.gd
+godot --headless --path . --script res://tests/furniture_restore_test.gd
+New-Item -ItemType Directory -Force build
+godot --headless --path . --export-release "Windows Desktop" build/RoomCraft.exe
+~~~
+
+Test ręczny wydania: uruchom RoomCraft.exe, zmień wymiary, dodaj stół, lampę na stole i okno. Zapisz projekt, zamknij program, uruchom ponownie i wczytaj plik. Sprawdź otwór okienny, położenie lampy, rozmiary oraz kolor pokoju. Wczytaj uszkodzony plik i upewnij się, że poprzedni pokój pozostał na ekranie.
