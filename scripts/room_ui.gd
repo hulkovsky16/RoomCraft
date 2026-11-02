@@ -6,6 +6,8 @@ extends Control
 @onready var status_label: Label = $SettingsPanel/Content/StatusLabel
 @onready var apply_button: Button = $SettingsPanel/Content/ApplyButton
 
+const ProjectStore = preload("res://scripts/project_store.gd")
+var project_dialog := FileDialog.new()
 var room_controller: Node
 
 
@@ -34,6 +36,18 @@ func _ready() -> void:
 	sensitivity.value_changed.connect(func(value):
 		camera.rotation_sensitivity = 0.008 * value
 		sensitivity_label.text = "Czułość kamery: %.2f×" % value)
+	var actions := HBoxContainer.new()
+	$SettingsPanel/Content.add_child(actions)
+	for save_mode: bool in [true, false]:
+		var button := Button.new()
+		button.text = "Zapisz projekt" if save_mode else "Wczytaj projekt"
+		button.pressed.connect(_open_project_dialog.bind(save_mode))
+		actions.add_child(button)
+	add_child(project_dialog)
+	project_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	project_dialog.filters = PackedStringArray(["*.json ; RoomCraft"])
+	project_dialog.current_dir = OS.get_user_data_dir()
+	project_dialog.file_selected.connect(_on_project_file)
 	apply_button.pressed.connect(_on_apply_pressed)
 	width_input.text_submitted.connect(func(_text): _on_apply_pressed())
 	length_input.text_submitted.connect(func(_text): _on_apply_pressed())
@@ -67,3 +81,18 @@ func _on_apply_pressed() -> void:
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused != null:
 		focused.release_focus()
+
+func _open_project_dialog(save_mode: bool) -> void:
+	project_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE if save_mode else FileDialog.FILE_MODE_OPEN_FILE
+	project_dialog.title = "Zapisz projekt" if save_mode else "Wczytaj projekt"
+	project_dialog.current_file = "RoomCraft.json" if save_mode else ""
+	project_dialog.popup_centered_ratio(0.75)
+
+
+func _on_project_file(path: String) -> void:
+	if project_dialog.file_mode == FileDialog.FILE_MODE_SAVE_FILE:
+		var error := ProjectStore.save_project(path, room_controller)
+		status_label.text = "Zapisano projekt" if error == OK else error_string(error)
+	else:
+		var result := ProjectStore.load_project(path, room_controller)
+		status_label.text = "Wczytano projekt" if result.ok else str(result.error)
