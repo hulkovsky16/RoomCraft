@@ -51,3 +51,33 @@ func get_floor_bounds() -> Dictionary:
 
 func set_window_openings(openings: Array[Dictionary]) -> void:
 	room_geometry.set_window_openings(openings)
+
+func restore_project_room(size: Vector2, wall: Color, floor_color: Color, records: Array) -> Dictionary:
+	var furniture := $FurnitureRoot
+	# Existing furniture is being replaced. Other registered validators still apply.
+	for validator in room_size_validators:
+		if validator != Callable(furniture, "can_resize_room") and validator.is_valid():
+			if not validator.call(size.x, size.y):
+				return {"ok": false, "error": "Nie można zmienić wymiarów pokoju"}
+	var bounds := {"min": -size / 2, "max": size / 2}
+	var commit_room := func():
+		room_geometry.wall_material.albedo_color = wall
+		room_geometry.floor_material.albedo_color = floor_color
+		room_geometry.rebuild(size.x, size.y)
+		room_size_changed.emit(size.x, size.y)
+	return furniture.restore_furniture(records, bounds, commit_room)
+
+
+func get_project_state() -> Dictionary:
+	var size := get_room_size()
+	return {
+		"version": 1,
+		"room": {"width": size.x, "length": size.y,
+			"wall_color": _color_channels(room_geometry.wall_material.albedo_color),
+			"floor_color": _color_channels(room_geometry.floor_material.albedo_color)},
+		"furniture": $FurnitureRoot.get_all_furniture()
+	}
+
+
+func _color_channels(color: Color) -> Array:
+	return [color.r, color.g, color.b, color.a]
