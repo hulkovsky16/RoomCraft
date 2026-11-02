@@ -2,6 +2,8 @@ name: RoomCraft Windows
 on:
   push:
     branches: [feature/save]
+  pull_request:
+    branches: [main, feature/furniture]
   workflow_dispatch:
 permissions:
   contents: read
