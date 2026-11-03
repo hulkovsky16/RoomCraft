@@ -1,66 +1,66 @@
 # RoomCraft
 
-Семестровый проект на Godot 4 / GDScript. Рабочая ветка участника №2: `feature/furniture`.
+Projekt semestralny w Godot 4, napisany w GDScript. Moduł mebli powstał w gałęzi `feature/furniture` (uczestnik 2), a zapis i odczyt projektu w gałęzi `feature/save` (uczestnik 4).
 
-## Запуск
+## Uruchomienie
 
-Откройте `project.godot` в Godot 4.7.2 и нажмите F6 для сцены `scenes/Room.tscn` или F5 для проекта. Проверено на Windows с Godot 4.7.2. Экспортированная сборка пока не подготовлена.
+Otwórz `project.godot` w Godot 4.7.2. Naciśnij F5, aby uruchomić projekt, lub otwórz scenę `scenes/Room.tscn` i naciśnij F6. W systemie Windows można też uruchomić wyeksportowany plik `RoomCraft.exe`.
 
-## Furniture System: каталог и редактирование
+## Katalog i edycja wyposażenia
 
-Реализованы 28 объектов с узнаваемой геометрией, материалами и миниатюрами. Геометрия создаётся кодом, внешних моделей и ассетов нет. Модели предназначены для MVP; окончательный UI и сохранение/загрузка JSON ещё не реализованы.
+Katalog prototypu zawiera 28 przedmiotów z miniaturami. Geometrię i materiały generuje kod projektu, bez zewnętrznych modeli. Poniższa tabela przedstawia podstawowe meble.
 
-| ID | Предмет | Ширина × высота × глубина, м |
+| ID | Przedmiot | Szerokość × wysokość × głębokość [m] |
 | --- | --- | --- |
-| table | Стол | 1.4 × 0.75 × 0.8 |
-| chair | Стул | 0.5 × 0.9 × 0.55 |
-| sofa | Диван | 2.0 × 0.85 × 0.9 |
-| armchair | Кресло | 0.9 × 0.85 × 0.85 |
-| bed | Кровать | 1.6 × 0.95 × 2.1 |
-| wardrobe | Шкаф | 1.2 × 2.0 × 0.6 |
-| bookshelf | Стеллаж | 0.8 × 1.8 × 0.35 |
-| desk | Письменный стол | 1.2 × 0.75 × 0.6 |
-| nightstand | Прикроватная тумба | 0.45 × 0.5 × 0.4 |
-| coffee_table | Журнальный столик | 1.0 × 0.4 × 0.6 |
+| table | Stół | 1.4 × 0.75 × 0.8 |
+| chair | Krzesło | 0.5 × 0.9 × 0.55 |
+| sofa | Sofa | 2.0 × 0.85 × 0.9 |
+| armchair | Fotel | 0.9 × 0.85 × 0.85 |
+| bed | Łóżko | 1.6 × 0.95 × 2.1 |
+| wardrobe | Szafa | 1.2 × 2.0 × 0.6 |
+| bookshelf | Regał | 0.8 × 1.8 × 0.35 |
+| desk | Biurko | 1.2 × 0.75 × 0.6 |
+| nightstand | Szafka nocna | 0.45 × 0.5 × 0.4 |
+| coffee_table | Stolik kawowy | 1.0 × 0.4 × 0.6 |
 
-Управление:
+### Sterowanie
 
-- Нажмите миниатюру в каталоге справа, чтобы начать размещение. Прокрутите каталог, чтобы увидеть все 28 объектов. Размеры показаны во всплывающей подсказке. Повторный клик по той же миниатюре добавляет ещё один экземпляр. T — быстрый выбор стола. Зелёный цвет разрешает установку, красный блокирует её.
-- ЛКМ: подтвердить размещение или выбрать существующий предмет (жёлтый).
-- G: начать перенос выбранного предмета; ЛКМ подтверждает, Esc отменяет. До подтверждения исходный предмет остаётся на месте.
-- Q / E или кнопки вращения: короткое нажатие переводит на следующую отметку 15° в выбранную сторону, удержание после 0.25 с плавно вращает со скоростью 90°/с. Отпускание, уход мыши с кнопки или потеря фокуса останавливают вращение. Коллизии проверяются на каждом малом шаге. Delete: удалить; Esc: отменить размещение.
-- Камера: W/S — полёт вперёд/назад в горизонтальной плоскости, A/D — в стороны; Page Up / Page Down — вверх/вниз; Shift — ускорение в 3 раза. ПКМ — вращение, средняя кнопка — панорамирование, колесо — зум, R — сброс. При вводе размеров в поле полёт отключён. После «Zastosuj wymiary» фокус поля снимается, WASD снова управляет камерой.
+- Kliknij miniaturę w katalogu po prawej stronie. Przewijaj listę, aby zobaczyć wszystkie przedmioty. Najedź na miniaturę, aby sprawdzić wymiary. Ponowne kliknięcie pozwala dodać kolejny egzemplarz. Klawisz T wybiera stół. Zielony podgląd oznacza, że można ustawić przedmiot, a czerwony wskazuje niedozwoloną pozycję.
+- Lewy przycisk myszy zatwierdza pozycję lub zaznacza istniejący przedmiot na żółto.
+- G rozpoczyna przenoszenie. Kliknij lewym przyciskiem myszy, aby zatwierdzić, lub naciśnij Esc, aby anulować. Do zatwierdzenia przedmiot pozostaje na miejscu.
+- Krótkie naciśnięcie Q, E lub przycisku obrotu przesuwa przedmiot do kolejnej wielokrotności 15° w danym kierunku. Po przytrzymaniu przez 0,25 s obrót jest płynny (90°/s). Zwolnienie przycisku, opuszczenie go kursorem lub utrata fokusu zatrzymuje obrót. Program sprawdza kolizje na każdym kroku. Delete usuwa przedmiot, a Esc anuluje ustawianie.
+- W/S przesuwa kamerę do przodu i do tyłu w poziomie, A/D na boki, a Page Up i Page Down w pionie. Shift trzykrotnie zwiększa prędkość. Prawy przycisk myszy obraca kamerę, środkowy przesuwa widok, kółko zmienia przybliżenie, a R przywraca widok początkowy. Podczas wpisywania wymiarów ruch kamery jest wyłączony. Po kliknięciu „Zastosuj wymiary” klawisze WASD ponownie sterują kamerą.
 
-Полный прямоугольный габарит мебели проверяется в плоскости XZ методом разделяющих осей (SAT), включая поворот. Соприкосновение краёв разрешено; пересечение запрещено. От границы комнаты учитывается половина толщины стены (0.05 м). Вложенное размещение под столом пока не поддерживается.
+Program sprawdza prostokątny obrys mebla na płaszczyźnie XZ metodą osi rozdzielających (SAT), także po obrocie. Krawędzie mogą się stykać. Obrysy nie mogą się przecinać. Przy ścianie program uwzględnia połowę jej grubości (0,05 m). Umieszczanie mebla pod stołem nie jest obsługiwane.
 
-## Контракт для команды
+## Wspólny interfejs modułów
 
-`FurnitureRoot` содержит `FurnitureSystem`. Его непосредственные дочерние объекты — `FurnitureItem`; положение относительно `FurnitureRoot`, Y = 0 для предметов на полу, для декора на опоре Y — высота её поверхности, для окон Y — высота нижнего края; единица = метр. На данном этапе корни комнаты и мебели должны иметь единичный масштаб и нулевую трансформацию.
+Węzeł `FurnitureRoot` korzysta ze skryptu `FurnitureSystem`. Przedmioty `FurnitureItem` są jego bezpośrednimi dziećmi. Pozycje podaje się względem tego węzła w metrach. Dla przedmiotu na podłodze Y = 0, dla dekoracji na meblu Y odpowiada wysokości powierzchni, a dla okna wysokości dolnej krawędzi. Węzły główne pokoju i mebli wymagają zerowego przesunięcia i obrotu oraz skali jednostkowej.
 
-Публичные методы:
+### Metody publiczne
 
-- `get_catalog()` → копия словаря 28 типов с полями `name`, `size`.
-- `spawn_furniture(type_id, position, support_id = "", yaw = 0.0)` → `FurnitureItem` либо `null` при ошибке.
-- `begin_placement(type_id)`, `begin_move_selected()`, `cancel_placement()` — интерактивный режим.
-- `move_selected(position)`, `rotate_selected(angle)` → `bool`; угол — приращение в **радианах** вокруг Y.
-- `rotate_active(angle)` — повернуть предпросмотр, если активен, иначе выбранный предмет; используется кнопками и Q/E.
-- `delete_selected()` — удалить выбранный предмет.
-- `get_all_furniture()` → массив словарей: `id` (случайный 128-битный идентификатор), `type_id`, `position` (`[x,y,z]`), `rotation_y` (радианы), `placement` (`floor` / `wall`), `wall_id` (для окон), `support_id` (ID опоры или пустая строка). Предпросмотр не включается; ID сохраняется при перемещении/повороте. Восстановление записей с исходными ID доступно через `restore_furniture(records)`.
+- `get_catalog()` zwraca kopię słownika 28 typów wyposażenia z polami `name` i `size`.
+- `spawn_furniture(type_id, position, support_id = "", yaw = 0.0)` tworzy obiekt `FurnitureItem` lub zwraca `null` w razie błędu.
+- `begin_placement(type_id)`, `begin_move_selected()` i `cancel_placement()` rozpoczynają ustawianie, rozpoczynają przenoszenie lub anulują operację.
+- `move_selected(position)` i `rotate_selected(angle)` zwracają `bool`. Kąt oznacza przyrost obrotu wokół osi Y w radianach.
+- `rotate_active(angle)` obraca aktywny podgląd lub zaznaczony przedmiot. Metodę wywołują przyciski obrotu oraz Q i E.
+- `delete_selected()` usuwa zaznaczony przedmiot.
+- `get_all_furniture()` zwraca tablicę słowników z polami `id` (losowy identyfikator 128-bitowy), `type_id`, `position` ([x, y, z]), `rotation_y` (radiany), `placement` (`floor` lub `wall`), `wall_id` (dla okien) i `support_id` (identyfikator podpory lub pusty tekst). Podgląd nie trafia do zapisu. Przenoszenie i obrót zachowują ID. Metoda `restore_furniture(records)` odtwarza przedmioty z pierwotnymi identyfikatorami.
 
-Сигналы: `selection_changed(item)` (`null` при снятии выбора), `furniture_changed`, `status_changed(message)`.
+Moduł wysyła sygnały `selection_changed(item)` (z wartością `null` po usunięciu zaznaczenia), `furniture_changed` oraz `status_changed(message)`.
 
-Участник №3 может заменить узел `FurnitureDebugUI` своим интерфейсом и вызывать эти методы. Корневые полноэкранные Control должны использовать `MOUSE_FILTER_IGNORE`, панели — обычную обработку мыши. Физический слой 2 зарезервирован для выбора мебели, слой 1 — для комнаты.
+Uczestnik 3 może zastąpić węzeł `FurnitureDebugUI` docelowym interfejsem korzystającym z tych metod. Pełnoekranowe węzły nadrzędne typu Control powinny mieć ustawienie `MOUSE_FILTER_IGNORE`. Panele obsługują mysz w zwykły sposób. Warstwa fizyczna 2 służy do wskazywania mebli, a warstwa 1 do obsługi pokoju.
 
-Изменения интеграции с участником №1:
+### Integracja z modułem pokoju uczestnika 1
 
-- `RoomController.add_room_size_validator(Callable)` проверяет мебель до изменения размеров, предотвращая выход предметов за новые стены.
-- Камера не обрабатывает ввод над панелями или при вводе в поле размеров.
-- Стены со стороны камеры скрываются для обзора интерьера; коллизии сохраняются.
-- Добавлено фоновое освещение и назначена стартовая сцена проекта.
+- `RoomController.add_room_size_validator(Callable)` rejestruje kontrolę, która przed zmianą wymiarów sprawdza, czy meble zmieszczą się w nowych granicach.
+- Kamera ignoruje sterowanie nad panelami i podczas wpisywania wymiarów.
+- Ściany od strony kamery są ukrywane, aby odsłonić wnętrze. Nadal uczestniczą w wykrywaniu kolizji.
+- Scena ma oświetlenie otoczenia i jest ustawiona jako scena startowa projektu.
 
-## Проверка
+## Testy
 
-Из корня репозитория (замените `godot` на путь к консольному exe):
+Uruchom polecenia z katalogu głównego repozytorium. W razie potrzeby zastąp `godot` ścieżką do konsolowej wersji programu.
 
 ```powershell
 godot --headless --editor --import --quit --path .
@@ -77,130 +77,130 @@ godot --path . --script res://tests/input_regression_test.gd
 godot --path . --rendering-method gl_compatibility --rendering-driver opengl3 --script res://tests/furniture_interaction_test.gd
 ```
 
-Последний тест использует отдельный графический SubViewport и синтетические события мыши; системный указатель не перемещается. Он проверяет путь через ввод viewport, выбор физическим лучом, перенос и блокировку над UI. Тест каталога проверяет габариты видимой геометрии, операции и восстановление материалов для всех напольных типов. `FurnitureThumbnail` создаёт изолированный SubViewport для миниатюры и отрисовывает её один раз; его можно использовать в окончательном UI.
+Ostatni test wykorzystuje oddzielny widok SubViewport i symulowane zdarzenia myszy. Sprawdza wskazywanie promieniem, przenoszenie i blokadę interakcji nad panelem bez poruszania kursorem systemowym. Test katalogu sprawdza wymiary widocznych modeli, operacje i przywracanie materiałów wszystkich typów podłogowych. `FurnitureThumbnail` jednokrotnie renderuje miniaturę w oddzielnym SubViewport. Docelowy interfejs może wykorzystywać ten sam komponent.
 
-Ручной сценарий: поставить два стола → попытаться наложить один на другой и вынести за стену → повернуть возле стены → отменить перенос → попытаться уменьшить комнату поверх мебели → удалить предмет. Недопустимые операции должны оставлять исходное состояние.
+Test ręczny: ustaw dwa stoły, spróbuj nałożyć jeden na drugi i przesunąć go za ścianę. Obróć stół przy ścianie, anuluj przenoszenie, spróbuj zmniejszyć pokój tak, aby przeciął mebel, a na koniec usuń przedmiot. Odrzucona operacja powinna zachować wcześniejszy układ.
 
-## Совместная работа
+## Praca zespołowa
 
-Изменения мебели отправляются в `feature/furniture`; `main` объединяется через Pull Request после проверки командой. Перед работой выполняйте `git fetch origin`. Не используйте принудительную отправку изменений в общие ветки.
+Zmiany modułu mebli trafiają do `feature/furniture`. Zespół przegląda zmiany przed scaleniem ich z `main` przez pull request. Przed rozpoczęciem pracy wykonaj `git fetch origin`. Unikaj wymuszonego wysyłania zmian do wspólnych gałęzi.
 
 
-## Кухня, ванная и декор
+## Kuchnia, łazienka i dekoracje
 
-Категории в выпадающем списке: `Wszystko` (всё), `Meble` (исходная мебель), `Dekoracje`, `Kuchnia`, `Łazienka`, `Okna`. Каталог можно прокручивать; размеры доступны в подсказках миниатюр. UI может читать необязательные поля каталога `category` (по умолчанию `Meble`) и `placement` (по умолчанию `floor`).
+Lista kategorii zawiera opcje `Wszystko`, `Meble`, `Dekoracje`, `Kuchnia`, `Łazienka` i `Okna`. Katalog można przewijać. Podpowiedzi przy miniaturach pokazują wymiary. Interfejs może odczytywać opcjonalne pola `category` (domyślnie `Meble`) i `placement` (domyślnie `floor`).
 
-| ID | Предмет | Ширина × высота × глубина, м |
+| ID | Przedmiot | Szerokość × wysokość × głębokość [m] |
 | --- | --- | --- |
-| window | Окно | 1.2 × 1.1 × 0.16 |
-| tv_console | Телевизор вместе с тумбой | 1.4 × 1.25 × 0.4 |
-| plant | Напольное растение в горшке | 0.65 × 1.3 × 0.65 |
-| flowers | Цветы в напольном горшке | 0.45 × 0.7 × 0.45 |
-| floor_lamp | Торшер | 0.45 × 1.65 × 0.45 |
-| kitchen_cabinet | Кухонная тумба со столешницей | 0.6 × 0.9 × 0.6 |
-| kitchen_sink | Мойка с тумбой и смесителем | 0.8 × 1.15 × 0.6 |
-| cooker | Плита с духовкой | 0.6 × 0.9 × 0.6 |
-| fridge | Холодильник | 0.7 × 1.85 × 0.7 |
-| dishwasher | Посудомоечная машина | 0.6 × 0.85 × 0.6 |
-| kitchen_island | Кухонный остров | 1.5 × 0.9 × 0.8 |
-| bathtub | Ванна | 0.8 × 0.6 × 1.7 |
-| toilet | Унитаз | 0.42 × 0.8 × 0.7 |
-| bathroom_vanity | Раковина с тумбой и смесителем | 0.7 × 1.05 × 0.5 |
-| shower | Душевая кабина | 0.9 × 2.1 × 0.9 |
-| washing_machine | Стиральная машина | 0.6 × 0.85 × 0.6 |
+| window | Okno | 1.2 × 1.1 × 0.16 |
+| tv_console | Telewizor z szafką RTV | 1.4 × 1.25 × 0.4 |
+| plant | Duża roślina doniczkowa | 0.65 × 1.3 × 0.65 |
+| flowers | Kwiaty w doniczce | 0.45 × 0.7 × 0.45 |
+| floor_lamp | Lampa podłogowa | 0.45 × 1.65 × 0.45 |
+| kitchen_cabinet | Szafka kuchenna z blatem | 0.6 × 0.9 × 0.6 |
+| kitchen_sink | Zlewozmywak z szafką i baterią | 0.8 × 1.15 × 0.6 |
+| cooker | Kuchenka z piekarnikiem | 0.6 × 0.9 × 0.6 |
+| fridge | Lodówka | 0.7 × 1.85 × 0.7 |
+| dishwasher | Zmywarka | 0.6 × 0.85 × 0.6 |
+| kitchen_island | Wyspa kuchenna | 1.5 × 0.9 × 0.8 |
+| bathtub | Wanna | 0.8 × 0.6 × 1.7 |
+| toilet | Toaleta | 0.42 × 0.8 × 0.7 |
+| bathroom_vanity | Umywalka z szafką i baterią | 0.7 × 1.05 × 0.5 |
+| shower | Kabina prysznicowa | 0.9 × 2.1 × 0.9 |
+| washing_machine | Pralka | 0.6 × 0.85 × 0.6 |
 
-Это модели для планировки: двери техники и створки окон не открываются, вода и электроприборы не симулируются. Телевизор и тумба — один объект. Цветы, маленькое растение и настольная лампа размещаются на полу или на разрешённых поверхностях; остальные предметы — на полу (окна — на стенах).
+Modele służą do planowania przestrzeni. Drzwi urządzeń i skrzydła okien pozostają zamknięte. Projekt nie symuluje przepływu wody ani działania urządzeń. Telewizor i szafka tworzą jeden przedmiot. Kwiaty, małą roślinę i lampkę stołową można ustawić na podłodze lub na odpowiednim meblu. Okna mocuje się do ścian, a pozostałe przedmioty ustawia na podłodze.
 
-## Окна и проёмы
+## Okna i otwory w ścianach
 
-1. Выберите `Okna` → `Okno`.
-2. Наведите на видимую стену. Центр окна следует за указателем, положение округляется до 5 см. Зелёный цвет разрешает установку, красный означает недопустимое положение.
-3. ЛКМ устанавливает окно. Для переноса выберите его, нажмите G и укажите новую точку на той же или другой стене. Esc отменяет перенос, Delete удаляет окно и закрывает проём.
-4. Окно автоматически поворачивается к стене, Q/E для него отключены. Чтобы редактировать окно на скрытой ближней стене, поверните камеру: окно скрывается вместе с этой стеной.
+1. W katalogu wybierz **Okna → Okno**.
+2. Wskaż widoczną ścianę. Środek okna podąża za kursorem w odstępach co 5 cm. Zielony podgląd oznacza poprawne położenie, czerwony sygnalizuje błąd.
+3. Kliknij lewym przyciskiem myszy, aby zamontować okno. Aby je przenieść, zaznacz je, naciśnij G i wskaż miejsce na tej samej lub innej ścianie. Esc anuluje przenoszenie, a Delete usuwa okno i zamyka otwór.
+4. Okno automatycznie ustawia się równolegle do ściany. Klawisze Q/E są dla niego wyłączone. Jeśli bliższa ściana jest ukryta, obróć kamerę, aby zobaczyć i edytować znajdujące się w niej okno.
 
-Стены разбиваются на прямоугольные сегменты вокруг окон: отверстия существуют и в видимой геометрии, и в коллизиях. На одной стене допустимо несколько непересекающихся окон. Рамы не могут выходить за углы, пол или потолок. Уменьшение комнаты блокируется, если оно обрезает окно или вызывает пересечение. При допустимом изменении размера окно следует за стеной, сохраняя высоту и координату вдоль неё.
+Ściany składają się z prostokątnych segmentów wokół okien, więc otwory występują zarówno w geometrii, jak i w bryłach kolizji. Jedna ściana może mieć kilka rozłącznych okien. Ramy muszą mieścić się między narożnikami, podłogą i sufitem. Zmniejszenie pokoju zostanie odrzucone, jeśli przecina okno lub powoduje kolizję. Przy poprawnej zmianie okno przesuwa się razem ze ścianą, zachowując wysokość i położenie wzdłuż niej.
 
-Проверка пересечений учитывает высоту: низкая тумба может стоять под подоконником, высокий шкаф не может пересекать раму. Проверка напольной мебели по-прежнему использует полный габарит, а не промежутки между ножками.
+Kontrola uwzględnia wysokość przedmiotów. Niska szafka mieści się pod parapetem, ale wysoka szafa nie może przecinać ramy. Dla mebli podłogowych program uwzględnia cały obrys, łącznie z przestrzenią między nogami.
 
-Дополнение к контракту:
+### Metody obsługi okien
 
-- `spawn_window(wall_id, offset, bottom = 1.0)` → объект либо `null`. `wall_id`: `FrontWall` (−Z), `BackWall` (+Z), `LeftWall` (−X), `RightWall` (+X). `offset` — координата X для стен Front/Back, координата Z для Left/Right; `bottom` — высота нижнего края. Этот метод предназначен в том числе для последующей интеграции загрузки.
-- `spawn_furniture("window", ...)` отклоняется: для окна нужна привязка к стене.
-- `RoomController.set_window_openings(openings)` передаёт проёмы в RoomGeometry. FurnitureSystem обновляет их после добавления, переноса, удаления и изменения размеров комнаты.
-- Запись окна содержит `wall_id`, `placement`, `position` с ненулевой высотой и `rotation_y`. Формат записи расширен; чтение/запись файлов JSON относится к Persistence; восстановление ID выполняет `restore_furniture`.
+- `spawn_window(wall_id, offset, bottom = 1.0)` zwraca okno lub `null`. Dostępne ściany to `FrontWall` (−Z), `BackWall` (+Z), `LeftWall` (−X) i `RightWall` (+X). Parametr `offset` określa współrzędną X dla ściany przedniej i tylnej lub Z dla lewej i prawej. Parametr `bottom` podaje wysokość dolnej krawędzi.
+- `spawn_furniture("window", ...)` odrzuca żądanie, ponieważ okno wymaga przypisania do ściany.
+- `RoomController.set_window_openings(openings)` przekazuje otwory do RoomGeometry. FurnitureSystem aktualizuje je po dodaniu, przeniesieniu i usunięciu okna oraz po zmianie wymiarów pokoju.
+- Rekord okna zawiera `wall_id`, `placement`, `position` z wysokością dolnej krawędzi oraz `rotation_y`. Moduł zapisu obsługuje plik JSON, a `restore_furniture` przywraca identyfikatory.
 
-Проверка окон: установить два окна на одной стене → перенести одно на другую стену → отменить повторный перенос → изменить размеры комнаты → удалить окно. Проём должен следовать за объектом и закрываться при удалении.
-
-
-Размеры комнаты можно менять многократно: кнопка сначала применяет текст обоих полей, затем перестраивает комнату. При недопустимом уменьшении показывается сообщение, а поля возвращаются к фактическим размерам; следующая попытка остаётся доступной. Тест `room_camera_test.gd` проверяет повторный ввод через поля и кнопку, восстановление после отказа, привязку окна и клавиатурное управление камерой.
+Test ręczny okien: zamontuj dwa okna w jednej ścianie, przenieś jedno na inną ścianę, rozpocznij i anuluj kolejne przenoszenie, zmień wymiary pokoju i usuń okno. Otwór powinien podążać za oknem i zniknąć po jego usunięciu.
 
 
-## Исправления ввода и управления
-
-Поля размеров теперь обычные числовые LineEdit, без SpinBox и разбора выражений. Разрешены цифры и один десятичный разделитель (точка или запятая). Буквы и операторы при наборе блокируются; вставленный текст фильтруется. Пустые значения и числа вне 2–30 м не применяются. Можно вводить, например, `6,5` и `4.25`; кнопка или Enter читает непосредственно текущий текст обоих полей. До подтверждения текст не заменяется из-за потери фокуса.
-
-После использования WASD включается свободный полёт: ПКМ поворачивает камеру на месте, колесо делает небольшой шаг по направлению взгляда. Высота при W/S не меняется, для неё предназначены PgUp/PgDn. Радиус полёта зависит от диагонали комнаты (минимум 20 м от её центра), высота — 0.2–15 м. R сбрасывает полёт и возвращает начальный орбитальный обзор комнаты. Это предотвращает вращение вокруг смещённой точки после движения стрелками.
-
-Публичные методы FurnitureSystem для удержания кнопок: `start_rotation(source, direction)` (`direction` = −1 или +1), `stop_rotation(source)`, `stop_all_rotation()`. Для источников используйте разные строки, например `ui_left` и `ui_right`; отпускайте удержание на button_up и mouse_exited. Окна по-прежнему ориентируются по стене автоматически.
-
-`input_regression_test.gd` воспроизводит последовательный ввод цифр событиями клавиатуры, десятичные разделители, запрет букв, фильтрацию вставленного текста, поворот камеры после полёта и удержание вращения с проверкой коллизий. Он использует отдельный viewport и не двигает системный указатель.
+Przycisk zmiany wymiarów odczytuje oba pola przed przebudową pokoju. Po niedozwolonym zmniejszeniu wyświetla komunikat i przywraca faktyczne wymiary w polach. Można od razu wpisać kolejne wartości. Test `room_camera_test.gd` sprawdza ponowne zatwierdzanie, przywracanie pól po błędzie, mocowanie okna i sterowanie kamerą z klawiatury.
 
 
-## WASD, чувствительность и выравнивание
+## Wprowadzanie wymiarów i sterowanie
 
-- Перемещение камеры перенесено со стрелок на физические клавиши W/A/S/D, независимо от текущей раскладки. PgUp/PgDn, Shift и R сохраняют назначение.
-- Ползунок `Czułość kamery` под размерами комнаты изменяет чувствительность вращения мышью от 0.25× до 3×. Настройка действует в текущем запуске и не сбрасывается клавишей R.
-- Размеры комнаты: от 2 до 30 м по каждой оси. Лимиты заданы в `RoomGeometry.MIN_ROOM_SIZE` и `MAX_ROOM_SIZE`; контроллер и UI используют те же значения. Обзор и предел перемещения камеры адаптируются к большим комнатам.
-- После плавного вращения Q/E возвращают на точную угловую сетку: из 38° Q даёт 30°, E даёт 45°. Из точных 45° следующее E даёт 60°.
-- F или `Wyrównaj do ścian` выравнивает по ближайшей оси комнаты (0°, 90°, 180°, 270°). Работает для выбранной мебели и предпросмотра; окна уже ориентированы по стене. Это выравнивание угла, не перемещение к стене.
-- В панели показывается текущий угол. При выравнивании размещённого объекта проверяется весь поворот, а не только конечная ориентация; если мешает стена или другой предмет, исходный угол сохраняется.
+Pola wymiarów korzystają z LineEdit. Przyjmują cyfry i jeden separator dziesiętny (przecinek lub kropkę), np. `6,5` lub `4.25`. Litery i operatory są blokowane, a wklejany tekst jest filtrowany. Pole nie oblicza wyrażeń. Przycisk zatwierdzenia lub Enter odczytuje bieżący tekst obu pól. Utrata fokusu zachowuje wpisany tekst. Puste pola i wartości spoza zakresu 2–30 m nie zmieniają pokoju.
 
-Публичный метод `FurnitureSystem.align_active() -> bool` выполняет такое же выравнивание для UI участника №3. Удержание Q/E остаётся плавным, а короткий клик возвращает точный угол.
+Użycie WASD włącza swobodny lot. Prawy przycisk myszy obraca kamerę w miejscu, a kółko przesuwa ją o mały krok w kierunku patrzenia. W/S zachowuje wysokość, którą zmienia się klawiszami PgUp/PgDn. Promień lotu zależy od przekątnej pokoju i wynosi co najmniej 20 m od środka. Zakres wysokości wynosi 0,2–15 m. Klawisz R przywraca początkowy widok orbitalny i jego środek obrotu.
 
+Do obsługi przytrzymania przycisku służą metody FurnitureSystem: `start_rotation(source, direction)` (kierunek −1 lub +1), `stop_rotation(source)` i `stop_all_rotation()`. Nadaj każdemu przyciskowi osobny identyfikator, np. `ui_left` i `ui_right`. Zatrzymaj obrót po zdarzeniu `button_up` lub `mouse_exited`. Okna automatycznie dopasowują orientację do ściany.
 
-## Декор на мебели и технике
-
-Разрешены **Kwiaty** (цветы), **Lampka stołowa** (настольная лампа, 0.28 × 0.45 × 0.28 м) и **Mała roślina** (маленькое растение, 0.30 × 0.55 × 0.30 м). Последние два предмета добавлены в категорию `Dekoracje`. Большое растение и торшер по-прежнему ставятся на пол.
-
-Опорами могут служить обеденный и журнальный столы, письменный стол, прикроватная тумба, кухонная тумба и остров, стиральная и посудомоечная машины, холодильник. Плита, мойка, раковина, диван, стул, кровать, телевизор и сам декор опорами не являются.
-
-Выберите небольшой предмет и наведите на верхнюю поверхность: предпросмотр автоматически поднимется на её высоту. ЛКМ подтверждает установку. Через G можно перенести декор на другой предмет или обратно на пол. Вид сверху на поверхность удобнее, чем наведение на её боковую стенку. Подсказки каталога показывают допустимый способ размещения, панель — высоту объекта.
-
-Проверки:
-
-- Основание горшка/лампы целиком находится в допустимой зоне опоры; при наведении рядом с краем положение корректируется в пределах столешницы. Листья и абажур могут немного выступать за край, но их полный габарит проверяется относительно стен, потолка и других предметов.
-- Декор не пересекается с другими объектами на той же поверхности, окнами или потолком. Самоподдержка, несуществующая опора и произвольное размещение в воздухе запрещены.
-- Перенос и вращение опоры перемещают весь декор вместе с ней. Предпросмотр переноса показывает также прикреплённые предметы. Если любой из них выходит за границы или сталкивается с мебелью, операция полностью отклоняется.
-- Удалить занятую опору нельзя: сначала перенесите либо удалите декор. Это предотвращает исчезновение предметов и зависание в воздухе.
-- Поддерживается один уровень: мебель на полу → небольшой декор на ней. Мебель на мебели и башни из горшков не допускаются.
-
-Контракт для команды:
-
-- `get_catalog()` содержит флаг `stackable` для разрешённого декора и `surface` для опор (отсутствующий флаг означает `false`). `footprint: Vector2` описывает размер основания декора; `size` остаётся полным габаритом.
-- `spawn_on_surface(type_id, support_id, offset = Vector2.ZERO)` создаёт предмет на опоре. `offset` задаётся в локальных XZ опоры относительно центра её допустимой поверхности. Новый предмет наследует поворот опоры. Возвращается `null` при ошибке.
-- `spawn_furniture(type_id, position, support_id = "", yaw = 0.0)` позволяет явно передать высоту, ориентацию и существующий ID опоры. Для предметов без опоры допускается только пол.
-- `move_selected(position, support_id = "")` переносит объект. Для перехода на другую опору передайте её ID и точную высоту; позиция с Y=0 переводит декор на пол и очищает связь. Перемещение по текущей поверхности может использовать прежний ID автоматически.
-- `FurnitureItem.support_id` и поле `support_id` в `to_record()`/`get_all_furniture()` сохраняют связь. Объекты остаются непосредственными детьми FurnitureRoot, позиции относятся к комнате. `restore_furniture(records)` восстанавливает исходные ID и связи независимо от порядка записей. Чтение JSON-файлов относится к модулю Persistence.
-
-Тесты проверяют размещение на тумбе и стиральной машине, ограничения типов и габаритов, независимый выбор декора, возврат на пол, перенос/поворот группы, отмену, запрет удаления занятой опоры, записи для сохранения и реальное наведение мышью на поверхности.
+Test `input_regression_test.gd` symuluje wpisywanie kolejnych cyfr i separatorów dziesiętnych, blokowanie liter, filtrowanie wklejonego tekstu, obrót kamery po locie oraz ciągły obrót mebla z kontrolą kolizji. Używa osobnego widoku i pozostawia kursor systemowy na miejscu.
 
 
-## Точная проверка небольшого декора
+## WASD, czułość kamery i wyrównywanie mebli
 
-Для пары небольших предметов (`flowers`, `potted_plant`, `table_lamp`) пересечение общих габаритов теперь только предварительная проверка. Окончательное решение использует выпуклые детали видимых моделей: основания, ножки, горшки, абажуры и листья. Пустота между деталями не блокирует соседний предмет. Для крупной мебели сохранён прежний консервативный габарит.
+- Ruch kamery wykorzystuje fizyczne klawisze W/A/S/D niezależnie od układu klawiatury. PgUp/PgDn, Shift i R działają tak jak opisano w sekcji o sterowaniu.
+- Suwak **Czułość kamery** pod polami wymiarów zmienia czułość obrotu myszą w zakresie od 0,25× do 3×. Ustawienie obowiązuje podczas bieżącej sesji. Naciśnięcie R zachowuje wybraną czułość.
+- W tej wersji szerokość i długość pokoju mogą wynosić od 2 do 30 m. Kontroler i interfejs korzystają ze stałych `RoomGeometry.MIN_ROOM_SIZE` i `MAX_ROOM_SIZE`. Widok i zasięg kamery dostosowują się do wielkości pokoju.
+- Po płynnym obrocie krótkie naciśnięcie Q lub E ustawia najbliższy kąt siatki w wybranym kierunku. Dla 38° klawisz Q ustawia 30°, a E ustawia 45°. Kolejne E zmienia 45° na 60°.
+- Klawisz F lub przycisk **Wyrównaj do ścian** obraca zaznaczony mebel albo podgląd do najbliższej osi pokoju (0°, 90°, 180° lub 270°), zachowując jego pozycję. Okna są już ustawione równolegle do ścian.
+- Panel pokazuje bieżący kąt. Podczas wyrównywania ustawionego mebla program sprawdza cały tor obrotu. Jeśli przeszkadza ściana lub inny przedmiot, mebel zachowuje pierwotny kąt.
 
-Коллизии выбора мышью для небольшого декора также состоят из отдельных деталей: луч может пройти между листьями или рядом с ножкой и попасть на столешницу. Основания этих трёх типов отмечены `round_base: true`; угол поворота не увеличивает занимаемый круглым основанием радиус на опоре. Проверки края столешницы, стен, потолка и реального пересечения деталей остаются включены.
-
-Предпросмотр сообщает конкретную причину запрета: выход за комнату, отсутствие подходящей опоры, наведение на бок вместо верха или столкновение с названным предметом.
-
-`decor_collision_test.gd` воспроизводит перекрытие старых невидимых коробок без контакта моделей, проверяет луч через пустоту между деталями и сравнивает новый алгоритм с независимыми convex-запросами физического движка в 72 положениях/поворотах. Графический тест подтверждает установку соседней лампы кликом и отказ при настоящем пересечении.
+Interfejs uczestnika 3 może wywołać `FurnitureSystem.align_active() -> bool`. Przytrzymanie Q/E nadal obraca płynnie, a krótkie naciśnięcie ustawia dokładny kąt.
 
 
-## Восстановление расстановки — интеграция Persistence
+## Dekoracje na meblach i urządzeniach
 
-`FurnitureSystem.restore_furniture(records)` принимает массив записей `get_all_furniture()` (в том числе результат JSON-декодирования) и возвращает `{"ok": true, "error": ""}` либо `{"ok": false, "error": "описание"}`. Метод заменяет всю мебель в **комнате текущего размера**, сохраняя ID, положения, повороты, стены окон и ссылки на опоры. Пустой массив очищает мебель и оконные проёмы.
+Na meblach można ustawiać **Kwiaty**, **Lampkę stołową** (0,28 × 0,45 × 0,28 m) i **Małą roślinę** (0,30 × 0,55 × 0,30 m). Lampka i mała roślina należą do kategorii `Dekoracje`. Duża roślina doniczkowa i lampa podłogowa stoją na podłodze.
 
-До изменения сцены проверяются типы полей, конечность чисел, уникальность ID, каталог, границы комнаты, опоры и пересечения. При отказе прежние предметы, выделение, предпросмотр и проёмы остаются на месте. При успехе редактирование отменяется, выделение сбрасывается и `furniture_changed` отправляется один раз. Старые записи напольных предметов могут не содержать `placement`, `wall_id`, `support_id`; остальные поля обязательны. ID — непустая строка.
+Dekoracje można postawić na stole, stoliku kawowym, biurku, szafce nocnej, szafce kuchennej, wyspie kuchennej, pralce, zmywarce i lodówce. Kuchenka, zlewozmywak, umywalka, sofa, krzesło, łóżko, telewizor i same dekoracje nie służą jako podpory.
+
+Wybierz dekorację i wskaż górną powierzchnię mebla. Podgląd dopasuje wysokość. Kliknij lewym przyciskiem myszy, aby zatwierdzić. Klawiszem G przeniesiesz dekorację na inny mebel lub na podłogę. Najłatwiej wskazać blat z góry. Podpowiedź w katalogu pokazuje dostępne sposoby ustawienia, a panel podaje wysokość przedmiotu.
+
+### Reguły rozmieszczania
+
+- Cała podstawa doniczki lub lampki musi mieścić się na blacie. Blisko krawędzi program koryguje pozycję. Liście i klosz mogą wystawać poza blat, o ile nie przecinają ścian, sufitu ani innych przedmiotów.
+- Dekoracja nie może przecinać drugiego przedmiotu na tej samej powierzchni, okna ani sufitu. Nie można ustawić jej w powietrzu, na nieistniejącej podporze ani na niej samej.
+- Podczas przenoszenia i obracania mebla dekoracje poruszają się razem z nim i są widoczne w podglądzie. Kolizja lub przekroczenie granicy przez dowolny element blokuje całą operację.
+- Przed usunięciem mebla przenieś lub usuń stojące na nim dekoracje. Zapobiega to ich zniknięciu lub pozostawieniu w powietrzu.
+- Obsługiwany jest jeden poziom: mebel na podłodze i dekoracja na meblu. Nie można układać mebli jeden na drugim ani piętrować doniczek.
+
+### Metody obsługi dekoracji
+
+- `get_catalog()` udostępnia flagę `stackable` dla dekoracji i `surface` dla podpór. Brak flagi oznacza `false`. Pole `footprint: Vector2` określa wymiary podstawy dekoracji, a `size` pełne wymiary modelu.
+- `spawn_on_surface(type_id, support_id, offset = Vector2.ZERO)` tworzy przedmiot na podporze. Parametr `offset` określa przesunięcie względem środka dostępnej powierzchni w lokalnych osiach XZ podpory. Przedmiot dziedziczy jej obrót. W razie błędu metoda zwraca `null`.
+- `spawn_furniture(type_id, position, support_id = "", yaw = 0.0)` przyjmuje wysokość, orientację i identyfikator istniejącej podpory. Przedmioty bez podpory można ustawić wyłącznie na podłodze.
+- `move_selected(position, support_id = "")` przenosi zaznaczony przedmiot. Przy zmianie podpory podaj jej ID i dokładną wysokość. Pozycja z Y = 0 przenosi dekorację na podłogę i usuwa powiązanie. Podczas przesuwania po tym samym blacie można zachować dotychczasowe ID.
+- `FurnitureItem.support_id` i pole `support_id` w `to_record()` oraz `get_all_furniture()` przechowują powiązanie z podporą. Przedmioty pozostają bezpośrednimi dziećmi FurnitureRoot, a ich pozycje są podawane względem pokoju. Metoda `restore_furniture(records)` odtwarza identyfikatory i powiązania niezależnie od kolejności rekordów. Pliki JSON odczytuje moduł zapisu.
+
+Testy obejmują ustawianie na szafce i pralce, ograniczenia typów i wymiarów, oddzielne zaznaczanie dekoracji, powrót na podłogę, przenoszenie i obrót grupy, anulowanie, blokadę usunięcia zajętej podpory, dane zapisu oraz wskazywanie powierzchni myszą.
+
+
+## Dokładność wykrywania kolizji małych dekoracji
+
+Dla pary małych przedmiotów (`flowers`, `potted_plant`, `table_lamp`) program najpierw sprawdza ich obrysy, a następnie wypukłe części modeli, m.in. podstawy, nóżki, doniczki, klosze i liście. Wolna przestrzeń między częściami pozwala dosunąć drugi przedmiot. Przy dużych meblach nadal uwzględnia się pełny obrys.
+
+Przy wybieraniu dekoracji myszą promień może przejść między liśćmi lub obok nóżki i trafić w blat. Wszystkie trzy typy mają oznaczenie `round_base: true`, więc obrót nie zwiększa promienia zajmowanego na blacie. Nadal obowiązują ograniczenia krawędzi blatu, ścian, sufitu i kolizji rzeczywistych części.
+
+Podgląd wskazuje powód odrzucenia pozycji, np. przekroczenie granicy pokoju, brak podpory, wskazanie boku zamiast blatu lub kolizję z konkretnym przedmiotem.
+
+Test `decor_collision_test.gd` sprawdza ustawienia, w których nakładają się obrysy, ale modele się nie stykają. Sprawdza też przejście promienia przez lukę i porównuje algorytm z niezależnymi zapytaniami silnika fizycznego dla brył wypukłych w 72 pozycjach i orientacjach. Test graficzny sprawdza ustawienie sąsiedniej lampki kliknięciem i odrzucenie rzeczywistej kolizji.
+
+
+## Odtwarzanie układu wyposażenia
+
+`FurnitureSystem.restore_furniture(records)` przyjmuje tablicę z `get_all_furniture()`, także po odczycie z JSON. Zwraca `{"ok": true, "error": ""}` albo `{"ok": false, "error": "opis błędu"}`. Przy wywołaniu z samymi rekordami odtwarza wyposażenie w pokoju o bieżących wymiarach. Zachowuje identyfikatory, pozycje, kąty obrotu, przypisanie okien do ścian i dekoracji do podpór. Pusta tablica usuwa wyposażenie i zamyka otwory okienne.
+
+Przed zmianą sceny moduł sprawdza typy pól, skończoność liczb, unikalność ID, zgodność z katalogiem, granice pokoju, podpory i kolizje. W razie błędu zachowuje wyposażenie, zaznaczenie, podgląd i otwory okienne. Po powodzeniu kończy edycję, usuwa zaznaczenie i raz wysyła sygnał `furniture_changed`. W starszych rekordach przedmiotów podłogowych pola `placement`, `wall_id` i `support_id` są opcjonalne. Pozostałe pola są wymagane. ID musi być niepustym ciągiem znaków.
 
 ```gdscript
 var result = furniture_system.restore_furniture(saved_data.get("furniture"))
@@ -208,8 +208,26 @@ if not result.ok:
     show_load_error(result.error)
 ```
 
-Задачи участника №4: формат файла/версия, чтение и запись JSON, обработка ошибок файла, сохранение размеров и других параметров комнаты. Для загрузки комнаты другого размера создайте отдельную скрытую сцену Room, задайте ей размеры, вызовите `restore_furniture` и замените активную сцену только после успеха всех шагов. Не очищайте активную комнату перед проверкой файла: восстановление мебели атомарно, но изменение размеров отдельным вызовом не входит в эту транзакцию.
+Uczestnik 4 odpowiada za wersję formatu, zapis i odczyt plików JSON, obsługę błędów oraz parametry pokoju. Przy wczytywaniu projektu o innych wymiarach moduł sprawdza rozmieszczenie w granicach zapisanych w pliku. Nowe wymiary, kolory i wyposażenie stosuje dopiero po poprawnym sprawdzeniu danych.
 
-Задачи участника №3: подключить окончательный интерфейс к публичным методам и сигналам; кнопки файлового сохранения/загрузки вызывают модуль участника №4. Временный `FurnitureDebugUI` можно заменить.
+Uczestnik 3 może zastąpić tymczasowy `FurnitureDebugUI` docelowym interfejsem, korzystając z publicznych metod i sygnałów. Przyciski zapisu i odczytu wywołują moduł uczestnika 4.
 
-Регрессия: `godot --headless --path . --script res://tests/furniture_restore_test.gd`. Проверяет JSON round-trip, окна, декор перед опорой, сохранение ID, ошибочные записи без изменения текущей сцены, пустую расстановку и старые записи.
+Test regresji uruchamia polecenie `godot --headless --path . --script res://tests/furniture_restore_test.gd`. Obejmuje zapis i odtworzenie danych JSON, okna, dekorację zapisaną przed podporą, zachowanie ID, błędne rekordy, pusty układ i starszy format danych.
+
+## Zapis, odczyt i wydanie Windows (uczestnik 4)
+
+W panelu pokoju wybierz **Zapisz projekt** lub **Wczytaj projekt**, a następnie plik JSON. Format v1 obejmuje szerokość i długość w metrach, kolory RGBA ścian i podłogi oraz komplet rekordów z `FurnitureSystem.get_all_furniture()`. Zapis obejmuje zatwierdzone przedmioty. Przy odczycie wymiary są sprawdzane według ograniczeń bieżącej wersji RoomGeometry. Błędny plik pozostawia dotychczasowy pokój i rozpoczętą edycję bez zmian.
+
+UI może wywołać `ProjectStore.save_project(path, room)` (kod Error) oraz `ProjectStore.load_project(path, room)` (słownik z polem ok i komunikatem error w razie błędu).
+
+Test i eksport (Godot 4.7.2 oraz odpowiadające mu szablony eksportu):
+
+~~~powershell
+godot --headless --editor --import --quit --path .
+godot --headless --path . --script res://tests/project_store_test.gd
+godot --headless --path . --script res://tests/furniture_restore_test.gd
+New-Item -ItemType Directory -Force build
+godot --headless --path . --export-release "Windows Desktop" build/RoomCraft.exe
+~~~
+
+Test ręczny wydania: uruchom RoomCraft.exe, zmień wymiary, dodaj stół, lampę na stole i okno. Zapisz projekt, zamknij program, uruchom ponownie i wczytaj plik. Sprawdź otwór okienny, położenie lampy, rozmiary oraz kolor pokoju. Wczytaj uszkodzony plik i upewnij się, że poprzedni pokój pozostał na ekranie.

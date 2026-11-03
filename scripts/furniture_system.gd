@@ -730,7 +730,8 @@ func _objects_overlap(a: FurnitureItem, at: Vector3, yaw: float, b: FurnitureIte
 
 # Persistence boundary: replaces furniture in the current room, never parses files.
 # All validation happens in a hidden staging container before the live scene changes.
-func restore_furniture(records: Variant) -> Dictionary:
+func restore_furniture(records: Variant, target_bounds: Dictionary = {}, commit_room: Callable = Callable()) -> Dictionary:
+	var bounds: Dictionary = room.get_floor_bounds() if target_bounds.is_empty() else target_bounds
 	if not records is Array:
 		return {"ok": false, "error": "Furniture must be an array"}
 	var stage := Node3D.new()
@@ -781,7 +782,7 @@ func restore_furniture(records: Variant) -> Dictionary:
 		for i in range(items.size()):
 			var item: FurnitureItem = items[i]
 			var pose := {"position": item.position, "yaw": item.rotation.y, "support_id": item.support_id}
-			if not item.position.is_finite() or not is_finite(item.rotation.y) or not _fits_room(item, item.position, item.rotation.y, room.get_floor_bounds()) or not _supported_pose(item, pose, {}, imported):
+			if not item.position.is_finite() or not is_finite(item.rotation.y) or not _fits_room(item, item.position, item.rotation.y, bounds) or not _supported_pose(item, pose, {}, imported):
 				error = "Invalid position or support: " + item.furniture_id
 				break
 			for j in range(i):
@@ -805,6 +806,8 @@ func restore_furniture(records: Variant) -> Dictionary:
 		item.reparent(self, false)
 		item.collision_layer = 2
 	stage.free()
+	if commit_room.is_valid():
+		commit_room.call()
 	furniture_changed.emit()
 	status_changed.emit("Wczytano wyposażenie pokoju")
 	return {"ok": true, "error": ""}
