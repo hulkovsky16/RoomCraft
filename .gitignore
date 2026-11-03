@@ -1,3 +1,26 @@
-# Godot 4+ specific ignores
+# Godot cache
 .godot/
+.import/
+
+# Exported builds
+/build/
+/dist/
+*.exe
+*.pck
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# IDE settings
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Android build files
 /android/
