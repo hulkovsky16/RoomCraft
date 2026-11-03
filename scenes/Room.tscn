@@ -5,7 +5,15 @@
 [ext_resource type="Script" uid="uid://camjd5rff2xxi" path="res://scripts/camera_controller.gd" id="3_hfcue"]
 [ext_resource type="PackedScene" uid="uid://bx42g0723fddg" path="res://scenes/room_ui.tscn" id="4_tnfip"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_ydu60"]
+[ext_resource type="Script" path="res://scripts/furniture_system.gd" id="5_furniture"]
+[ext_resource type="Script" path="res://scripts/furniture_debug_ui.gd" id="6_furniture_ui"]
+
+[sub_resource type="Environment" id="Environment_room"]
+background_mode = 1
+background_color = Color(0.16, 0.18, 0.22, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.85, 0.9, 1, 1)
+ambient_light_energy = 0.5
 
 [node name="Room" type="Node3D" unique_id=1153679153]
 script = ExtResource("1_liqgt")
@@ -14,9 +22,7 @@ script = ExtResource("1_liqgt")
 script = ExtResource("1_llheb")
 
 [node name="FurnitureRoot" type="Node3D" parent="." unique_id=898378887]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="FurnitureRoot" unique_id=491341363]
-mesh = SubResource("BoxMesh_ydu60")
+script = ExtResource("5_furniture")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=804807392]
 current = true
@@ -28,3 +34,9 @@ transform = Transform3D(0.8660254, 0.3535534, -0.3535534, 0, 0.7071068, 0.707106
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=179373543]
 
 [node name="RoomUI" parent="UILayer" unique_id=1639363027 instance=ExtResource("4_tnfip")]
+
+[node name="FurnitureDebugUI" type="CanvasLayer" parent="."]
+script = ExtResource("6_furniture_ui")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_room")

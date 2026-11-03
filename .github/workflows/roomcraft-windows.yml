@@ -1,0 +1,55 @@
+name: RoomCraft Windows
+on:
+  push:
+    branches: [feature/save]
+  pull_request:
+    branches: [main, feature/furniture]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-and-export:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot and Windows export templates
+        shell: pwsh
+        run: |
+          $version = '4.7.2'
+          $release = "https://github.com/godotengine/godot-builds/releases/download/$version-stable"
+          $archive = "Godot_v$version-stable_win64.exe.zip"
+          Invoke-WebRequest "$release/$archive" -OutFile "$env:RUNNER_TEMP/editor.zip"
+          Expand-Archive "$env:RUNNER_TEMP/editor.zip" "$env:RUNNER_TEMP/editor"
+          "$env:RUNNER_TEMP/editor" >> $env:GITHUB_PATH
+          Invoke-WebRequest "$release/Godot_v$version-stable_export_templates.tpz" -OutFile "$env:RUNNER_TEMP/templates.zip"
+          $templates = "$env:APPDATA/Godot/export_templates/$version.stable"
+          New-Item -ItemType Directory -Force $templates | Out-Null
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [IO.Compression.ZipFile]::OpenRead("$env:RUNNER_TEMP/templates.zip")
+          try {
+            foreach ($name in 'windows_release_x86_64.exe','windows_debug_x86_64.exe','windows_release_x86_64_console.exe','windows_debug_x86_64_console.exe') {
+              $entry = $zip.GetEntry("templates/$name")
+              if ($entry) { [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, "$templates/$name", $true) }
+            }
+          } finally { $zip.Dispose() }
+      - name: Test, export and launch
+        shell: pwsh
+        run: |
+          $godot = 'Godot_v4.7.2-stable_win64_console.exe'
+          & $godot --headless --editor --import --quit --path .
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          foreach ($test in 'furniture_restore_test','project_store_test') {
+            & $godot --headless --path . --script "res://tests/$test.gd"
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+          New-Item -ItemType Directory -Force build | Out-Null
+          & $godot --headless --path . --export-release "Windows Desktop" build/RoomCraft.exe
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          if (!(Test-Path build/RoomCraft.exe)) { throw 'Missing Windows export' }
+          $run = Start-Process -FilePath .\build\RoomCraft.exe -ArgumentList '--headless','--quit-after','5' -Wait -PassThru
+          exit $run.ExitCode
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RoomCraft-Windows
+          path: build/

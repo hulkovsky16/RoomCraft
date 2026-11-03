@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bx42g0723fddg"]
 
 [ext_resource type="Script" uid="uid://caqqlqbdjk2bu" path="res://scripts/room_ui.gd" id="1_c1pem"]
+[ext_resource type="Script" path="res://scripts/dimension_input.gd" id="2_dimension"]
 
 [node name="RoomUI" type="Control" unique_id=1639363027]
 layout_mode = 3
@@ -9,7 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
+mouse_filter = 2
 script = ExtResource("1_c1pem")
 
 [node name="SettingsPanel" type="PanelContainer" parent="." unique_id=670694031]
@@ -24,12 +25,10 @@ layout_mode = 2
 layout_mode = 2
 text = "RoomCraft — Urządzanie pokoju"
 
-[node name="WidthInput" type="SpinBox" parent="SettingsPanel/Content" unique_id=539401223]
+[node name="WidthInput" type="LineEdit" parent="SettingsPanel/Content" unique_id=539401223]
 layout_mode = 2
-min_value = 3.0
-max_value = 10.0
-step = 0.5
-value = 5.0
+text = "5"
+script = ExtResource("2_dimension")
 
 [node name="WidthLabel" type="Label" parent="SettingsPanel/Content" unique_id=539070928]
 layout_mode = 2
@@ -39,12 +38,10 @@ text = "Szerokość (m)"
 layout_mode = 2
 text = "Długość (m)"
 
-[node name="LengthInput" type="SpinBox" parent="SettingsPanel/Content" unique_id=578674228]
+[node name="LengthInput" type="LineEdit" parent="SettingsPanel/Content" unique_id=578674228]
 layout_mode = 2
-min_value = 3.0
-max_value = 10.0
-step = 0.5
-value = 4.0
+text = "4"
+script = ExtResource("2_dimension")
 
 [node name="ApplyButton" type="Button" parent="SettingsPanel/Content" unique_id=1440956694]
 layout_mode = 2
@@ -52,4 +49,6 @@ text = "Zastosuj wymiary"
 
 [node name="StatusLabel" type="Label" parent="SettingsPanel/Content" unique_id=1429172182]
 layout_mode = 2
+custom_minimum_size = Vector2(240, 40)
+autowrap_mode = 3
 text = "Wprowadź wymiary pokoju"
