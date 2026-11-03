@@ -5,8 +5,7 @@
 # Exported builds
 /build/
 /dist/
-*.exe
-*.pck
+
 
 # Temporary files
 *.tmp
