@@ -7,6 +7,7 @@
 
 [ext_resource type="Script" path="res://scripts/furniture_system.gd" id="5_furniture"]
 [ext_resource type="Script" path="res://scripts/furniture_debug_ui.gd" id="6_furniture_ui"]
+[ext_resource type="Script" path="res://scripts/in_game_menu.gd" id="7_in_game_menu"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -37,6 +38,9 @@ transform = Transform3D(0.8660254, 0.3535534, -0.3535534, 0, 0.7071068, 0.707106
 
 [node name="FurnitureDebugUI" type="CanvasLayer" parent="."]
 script = ExtResource("6_furniture_ui")
+
+[node name="InGameMenu" type="CanvasLayer" parent="."]
+script = ExtResource("7_in_game_menu")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_room")
