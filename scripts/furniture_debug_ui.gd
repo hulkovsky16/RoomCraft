@@ -305,7 +305,7 @@ func _refresh_props() -> void:
 
 # ---------- wykończenie pokoju ----------
 
-func _sync_style_from_room() -> void:
+func _sync_style_from_room(_width: float = 0.0, _length: float = 0.0) -> void:
 	var geometry = room.room_geometry
 	if geometry == null:
 		return
