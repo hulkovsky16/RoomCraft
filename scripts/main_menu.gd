@@ -119,6 +119,14 @@ func _build_projects_panel(parent: Control) -> void:
 	parent.add_child(_projects_panel)
 
 	_projects_panel.add_child(_header("Wczytaj projekt"))
+	var folder := ProjectSettings.globalize_path(MenuState.PROJECTS_DIR)
+	var location := Label.new()
+	location.text = "Folder zapisu: " + folder
+	location.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	location.custom_minimum_size.x = 340
+	_projects_panel.add_child(location)
+	_projects_panel.add_child(UiStyle.make_button("Otwórz folder projektów", "open", func() -> void:
+		OS.shell_open(folder)))
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(340, 240)
@@ -214,6 +222,7 @@ func _on_load_projects_pressed() -> void:
 
 func _refresh_project_list() -> void:
 	for child in _project_list.get_children():
+		_project_list.remove_child(child)
 		child.queue_free()
 	var paths := MenuState.list_projects()
 	if paths.is_empty():
@@ -224,7 +233,10 @@ func _refresh_project_list() -> void:
 		return
 	for path in paths:
 		var project_name := path.get_file().get_basename()
-		_project_list.add_child(UiStyle.make_button(project_name, "open", _open_project.bind(path)))
+		var button := UiStyle.make_button(project_name, "open", _open_project.bind(path))
+		button.tooltip_text = ProjectSettings.globalize_path(path)
+		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		_project_list.add_child(button)
 
 
 func _on_pick_file_pressed() -> void:

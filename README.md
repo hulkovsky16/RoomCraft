@@ -216,7 +216,7 @@ Test regresji uruchamia polecenie `godot --headless --path . --script res://test
 
 ## Zapis, odczyt i wydanie Windows (uczestnik 4)
 
-W menu głównym wybierz **Nowy projekt** i podaj nazwę albo wybierz **Wczytaj projekt**. Przycisk **Zapisz zmiany** zapisuje bieżący projekt. W panelu pokoju możesz też wybrać **Zapisz projekt** lub **Wczytaj projekt** i wskazać plik JSON. Po udanej operacji **Zapisz zmiany** zapisuje do tego pliku. Format v1 obejmuje szerokość i długość w metrach, kolory RGBA ścian i podłogi oraz komplet rekordów z `FurnitureSystem.get_all_furniture()`. Zapis obejmuje zatwierdzone przedmioty. Przy odczycie wymiary są sprawdzane według ograniczeń bieżącej wersji RoomGeometry. Błędny plik pozostawia dotychczasowy pokój i rozpoczętą edycję bez zmian.
+W menu głównym wybierz **Nowy projekt** i podaj nazwę albo wybierz **Wczytaj projekt**. Przycisk **Zapisz zmiany** zapisuje bieżący projekt. Menu **Wczytaj projekt** pokazuje folder zapisu i umożliwia otwarcie go w Eksploratorze. Projekty pomyślnie otwarte z dysku pojawiają się na liście także po ponownym uruchomieniu aplikacji. Zmiany są zapisywane do otwartego pliku, którego ścieżkę pokazuje podpowiedź przycisku **Zapisz zmiany**. Format v1 obejmuje szerokość i długość w metrach, kolory RGBA ścian i podłogi oraz komplet rekordów z `FurnitureSystem.get_all_furniture()`. Zapis obejmuje zatwierdzone przedmioty. Przy odczycie wymiary są sprawdzane według ograniczeń bieżącej wersji RoomGeometry. Błędny plik pozostawia dotychczasowy pokój i rozpoczętą edycję bez zmian.
 
 UI może wywołać `ProjectStore.save_project(path, room)` (kod Error) oraz `ProjectStore.load_project(path, room)` (słownik z polem ok i komunikatem error w razie błędu).
 

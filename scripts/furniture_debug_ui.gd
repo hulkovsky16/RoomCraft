@@ -14,7 +14,6 @@ var room
 var _title_label: Label
 var _props_label: Label
 var _status_label: Label
-var _hints_label: Label
 var _wall_picker: ColorPickerButton
 var _floor_picker: ColorPickerButton
 var _sun_slider: HSlider
@@ -110,12 +109,12 @@ func _build_side_panel(root: Control) -> void:
 
 	content.add_child(HSeparator.new())
 	content.add_child(_heading("Wykończenie"))
-	_wall_picker = ColorPickerButton.new()
+	_wall_picker = _color_picker("Zmień kolor ścian")
 	_wall_picker.color_changed.connect(_on_wall_color)
-	content.add_child(_row("Kolor ścian", _wall_picker))
-	_floor_picker = ColorPickerButton.new()
+	content.add_child(_color_row("Kolor ścian", _wall_picker))
+	_floor_picker = _color_picker("Zmień kolor podłogi")
 	_floor_picker.color_changed.connect(_on_floor_color)
-	content.add_child(_row("Kolor podłogi", _floor_picker))
+	content.add_child(_color_row("Kolor podłogi", _floor_picker))
 	_sun_slider = _slider(0.0, 3.0, 0.05)
 	_sun_slider.value_changed.connect(_on_sun_changed)
 	content.add_child(_row("Światło główne", _sun_slider))
@@ -127,6 +126,7 @@ func _build_side_panel(root: Control) -> void:
 func _build_bottom_bar(root: Control) -> void:
 	var column := VBoxContainer.new()
 	column.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	column.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	column.offset_left = -400
 	column.offset_right = 400
 	column.offset_top = -100
@@ -150,30 +150,75 @@ func _build_bottom_bar(root: Control) -> void:
 	bar.add_child(toolbar)
 
 	toolbar.add_child(_tool_button("Wybierz", "select", "Kliknij mebel, aby go zaznaczyć", _on_select_pressed))
-	toolbar.add_child(_tool_button("Przenieś", "move", "Przenieś zaznaczony mebel (G)", _on_move_pressed))
-	toolbar.add_child(_rotate_button("Obróć ←", "rotate_left", "RotateLeft", "ui_left", -1.0))
-	toolbar.add_child(_rotate_button("Obróć →", "rotate_right", "RotateRight", "ui_right", 1.0))
-	toolbar.add_child(_tool_button("Wyrównaj", "align", "Wyrównaj do ścian (F)", _on_align_pressed))
-	toolbar.add_child(_tool_button("Usuń", "delete", "Usuń zaznaczony mebel (Delete)", _on_delete_pressed))
-	toolbar.add_child(_tool_button("Anuluj", "cancel", "Anuluj ustawianie (Esc)", _on_cancel_pressed))
+	toolbar.add_child(_tool_button("Przenieś [G]", "move", "Przenieś zaznaczony mebel (G)", _on_move_pressed))
+	toolbar.add_child(_rotate_button("Obróć [Q]", "rotate_left", "RotateLeft", "ui_left", -1.0))
+	toolbar.add_child(_rotate_button("Obróć [E]", "rotate_right", "RotateRight", "ui_right", 1.0))
+	toolbar.add_child(_tool_button("Wyrównaj [F]", "align", "Wyrównaj do ścian (F)", _on_align_pressed))
+	toolbar.add_child(_tool_button("Usuń [Del]", "delete", "Usuń zaznaczony mebel (Delete)", _on_delete_pressed))
+	toolbar.add_child(_tool_button("Anuluj [Esc]", "cancel", "Anuluj ustawianie (Esc)", _on_cancel_pressed))
 
 
 func _build_hints(root: Control) -> void:
-	_hints_label = Label.new()
-	_hints_label.text = "WASD — lot  •  Shift — szybciej  •  PgUp/PgDn — góra/dół  •  PPM — obrót kamery  •  ŚPM — przesunięcie  •  Kółko — zoom  •  R — widok pokoju\nKatalog: kliknij miniaturę, potem podłogę  •  G — przenieś  •  Q/E — obrót  •  F — wyrównanie  •  Delete — usuń"
-	_hints_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hints_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hints_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hints_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_hints_label.offset_left = -280
-	_hints_label.offset_right = 280
-	_hints_label.offset_top = 12
-	_hints_label.visible = MenuState.show_hints
-	root.add_child(_hints_label)
+	if not MenuState.show_hints:
+		return
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	center.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	center.offset_top = 12
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(center)
+	var panel := PanelContainer.new()
+	UiStyle.style_panel(panel)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(panel)
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 16)
+	grid.add_theme_constant_override("v_separation", 5)
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(grid)
+	for entry in [["WASD", "Lot"], ["PPM", "Obrót"], ["Kółko", "Zoom"], ["PgUp / PgDn", "Góra / dół"], ["ŚPM", "Przesuń widok"], ["R", "Reset widoku"], ["Shift", "Szybszy lot"]]:
+		var row := HBoxContainer.new()
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var key := Label.new()
+		key.text = entry[0]
+		key.add_theme_color_override("font_color", UiStyle.ACCENT)
+		key.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(key)
+		var action := Label.new()
+		action.text = entry[1]
+		action.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(action)
+		grid.add_child(row)
+
+
+func _color_picker(hint: String) -> ColorPickerButton:
+	var picker := ColorPickerButton.new()
+	UiStyle.style_button(picker)
+	picker.custom_minimum_size = Vector2(76, 34)
+	picker.edit_alpha = false
+	picker.tooltip_text = hint
+	for state in ["normal", "hover", "pressed"]:
+		var frame: StyleBoxFlat = picker.get_theme_stylebox(state).duplicate()
+		frame.set_border_width_all(2)
+		frame.border_color = UiStyle.ACCENT if state != "normal" else Color("#a7b5ca")
+		picker.add_theme_stylebox_override(state, frame)
+	return picker
+
+
+func _color_row(text: String, picker: ColorPickerButton) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(picker)
+	var label := Label.new()
+	label.text = text
+	row.add_child(label)
+	return row
 
 
 func _tool_button(text: String, icon_name: String, tooltip: String, handler: Callable) -> Button:
 	var button := UiStyle.make_button(text, icon_name, handler)
+	button.add_theme_font_size_override("font_size", 14)
 	button.tooltip_text = tooltip
 	return button
 
@@ -182,6 +227,7 @@ func _rotate_button(text: String, icon_name: String, node_name: String, source: 
 	var button := Button.new()
 	button.name = node_name
 	button.text = text
+	button.add_theme_font_size_override("font_size", 14)
 	button.tooltip_text = "Przytrzymaj, aby obracać płynnie"
 	UiStyle.style_button(button, icon_name)
 	button.button_down.connect(furniture.start_rotation.bind(source, direction))
