@@ -15,15 +15,15 @@ var _toast_timer: Timer
 func _ready() -> void:
 	layer = 10
 	room = get_parent()
+	MenuState.current_project_path = ""
 	_build_buttons()
 	_build_dialogs()
 
 	if MenuState.pending_new_name != "":
 		var new_name := MenuState.pending_new_name
 		MenuState.pending_new_name = ""
-		MenuState.current_project_path = MenuState.project_path_for(new_name)
 		# Odłożone, aby pokój zdążył zbudować geometrię przed zapisem.
-		call_deferred("_save_to", MenuState.current_project_path, "Utworzono projekt: %s" % new_name)
+		call_deferred("_save_to", MenuState.project_path_for(new_name), "Utworzono projekt: %s" % new_name)
 	elif MenuState.pending_project_path != "":
 		var path := MenuState.pending_project_path
 		MenuState.pending_project_path = ""
@@ -101,6 +101,7 @@ func _save_to(path: String, success_text: String) -> void:
 		return
 	var error := ProjectStore.save_project(path, room)
 	if error == OK:
+		MenuState.current_project_path = path
 		_show_toast(success_text)
 	else:
 		_show_error("Nie udało się zapisać projektu: %s" % error_string(error))

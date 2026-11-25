@@ -1,6 +1,6 @@
 # RoomCraft
 
-Projekt semestralny w Godot 4, napisany w GDScript. Moduł mebli powstał w gałęzi `feature/furniture` (uczestnik 2), a zapis i odczyt projektu w gałęzi `feature/save` (uczestnik 4).
+Projekt semestralny w Godot 4, napisany w GDScript. Moduł mebli powstał w gałęzi `feature/furniture`, interfejs w `feature/ui`, a zapis i odczyt projektu w `feature/save`.
 
 ## Uruchomienie
 
@@ -210,13 +210,13 @@ if not result.ok:
 
 Uczestnik 4 odpowiada za wersję formatu, zapis i odczyt plików JSON, obsługę błędów oraz parametry pokoju. Przy wczytywaniu projektu o innych wymiarach moduł sprawdza rozmieszczenie w granicach zapisanych w pliku. Nowe wymiary, kolory i wyposażenie stosuje dopiero po poprawnym sprawdzeniu danych.
 
-Uczestnik 3 może zastąpić tymczasowy `FurnitureDebugUI` docelowym interfejsem, korzystając z publicznych metod i sygnałów. Przyciski zapisu i odczytu wywołują moduł uczestnika 4.
+Interfejs korzysta z publicznych metod i sygnałów modułu mebli. Przyciski zapisu i odczytu wywołują moduł zapisu projektów.
 
 Test regresji uruchamia polecenie `godot --headless --path . --script res://tests/furniture_restore_test.gd`. Obejmuje zapis i odtworzenie danych JSON, okna, dekorację zapisaną przed podporą, zachowanie ID, błędne rekordy, pusty układ i starszy format danych.
 
 ## Zapis, odczyt i wydanie Windows (uczestnik 4)
 
-W panelu pokoju wybierz **Zapisz projekt** lub **Wczytaj projekt**, a następnie plik JSON. Format v1 obejmuje szerokość i długość w metrach, kolory RGBA ścian i podłogi oraz komplet rekordów z `FurnitureSystem.get_all_furniture()`. Zapis obejmuje zatwierdzone przedmioty. Przy odczycie wymiary są sprawdzane według ograniczeń bieżącej wersji RoomGeometry. Błędny plik pozostawia dotychczasowy pokój i rozpoczętą edycję bez zmian.
+W menu głównym wybierz **Nowy projekt** i podaj nazwę albo wybierz **Wczytaj projekt**. Przycisk **Zapisz zmiany** zapisuje bieżący projekt. W panelu pokoju możesz też wybrać **Zapisz projekt** lub **Wczytaj projekt** i wskazać plik JSON. Po udanej operacji **Zapisz zmiany** zapisuje do tego pliku. Format v1 obejmuje szerokość i długość w metrach, kolory RGBA ścian i podłogi oraz komplet rekordów z `FurnitureSystem.get_all_furniture()`. Zapis obejmuje zatwierdzone przedmioty. Przy odczycie wymiary są sprawdzane według ograniczeń bieżącej wersji RoomGeometry. Błędny plik pozostawia dotychczasowy pokój i rozpoczętą edycję bez zmian.
 
 UI może wywołać `ProjectStore.save_project(path, room)` (kod Error) oraz `ProjectStore.load_project(path, room)` (słownik z polem ok i komunikatem error w razie błędu).
 

@@ -92,7 +92,11 @@ func _open_project_dialog(save_mode: bool) -> void:
 func _on_project_file(path: String) -> void:
 	if project_dialog.file_mode == FileDialog.FILE_MODE_SAVE_FILE:
 		var error := ProjectStore.save_project(path, room_controller)
+		if error == OK:
+			MenuState.current_project_path = path
 		status_label.text = "Zapisano projekt" if error == OK else error_string(error)
 	else:
 		var result := ProjectStore.load_project(path, room_controller)
+		if result.ok:
+			MenuState.current_project_path = path
 		status_label.text = "Wczytano projekt" if result.ok else str(result.error)
